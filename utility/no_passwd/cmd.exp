@@ -1,0 +1,7 @@
+expect {
+  "password" {send "THE_PASSWORD\r"}
+  "Password" {send "THE_PASSWORD\r"}
+}
+#set timeout 1
+expect eof
+exit

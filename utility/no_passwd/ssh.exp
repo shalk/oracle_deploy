@@ -1,0 +1,51 @@
+expect {
+  "password"               {send "THE_PASSWORD\r"}
+  "Password"               {send "THE_PASSWORD\r"}
+  "(yes/no)"               {send "yes\r"}
+  "Overwrite (y/n)"        {send "y\n"}
+  "save"                   {send "\n"}
+  "empty"                  {send "\n"}
+  "again"                  {send "\n"}
+  eof exit
+}
+expect {
+  "password"               {send "THE_PASSWORD\r"}
+  "Password"               {send "THE_PASSWORD\r"}
+  "(yes/no)"               {send "yes\r"}
+  "Overwrite (y/n)"        {send "y\n"}
+  "save"                   {send "\n"}
+  "empty"                  {send "\n"}
+  "again"                  {send "\n"}
+  eof exit
+}
+expect {
+  "password"               {send "THE_PASSWORD\r"}
+  "Password"               {send "THE_PASSWORD\r"}
+  "(yes/no)"               {send "yes\r"}
+  "Overwrite (y/n)"        {send "y\n"}
+  "save"                   {send "\n"}
+  "empty"                  {send "\n"}
+  "again"                  {send "\n"}
+  eof exit
+}
+expect {
+  "password"               {send "THE_PASSWORD\r"}
+  "Password"               {send "THE_PASSWORD\r"}
+  "(yes/no)"               {send "yes\r"}
+  "Overwrite (y/n)"        {send "y\n"}
+  "save"                   {send "\n"}
+  "empty"                  {send "\n"}
+  "again"                  {send "\n"}
+  eof exit
+}
+expect {
+  "password"               {send "THE_PASSWORD\r"}
+  "Password"               {send "THE_PASSWORD\r"}
+  "(yes/no)"               {send "yes\r"}
+  "Overwrite (y/n)"        {send "y\n"}
+  "save"                   {send "\n"}
+  "empty"                  {send "\n"}
+  "again"                  {send "\n"}
+  eof exit
+}
+expect eof exit

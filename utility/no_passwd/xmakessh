@@ -1,0 +1,84 @@
+#!/bin/bash
+
+ARGS='-o h --long pass:,nodes:,user:'
+arg=$@
+
+eval set -- $(getopt $ARGS -- "$@" )
+[[ "$@" == "--" ]] && set -- "-h"
+while true ; do
+  case "$1" in
+    -i|--pass)
+      pass=${2}
+      shift 2
+      ;;
+    -p|--nodes)
+      nodes=${2}
+      shift 2
+      ;;
+    -u|--user)
+      user=${2}
+      shift 2
+      ;;
+    -h)
+      echo "Option : "
+      echo "   --pass password"
+      echo "   --nodes node1,node2"
+      echo "   --user username"
+      echo "   -h  help"
+      exit 0
+      ;;
+    --) break
+      ;;
+    *) "echo iput '$@' error"
+      exit 1
+      ;;
+  esac
+done
+if [[ "" == $nodes ]] ; then
+  echo "no input nodes"
+  exit 1
+fi
+if [[ "" == $pass ]] ; then
+  echo "no input password"
+  exit 1
+fi
+
+rm -rf /tmp/.ssh
+if [[ "root" == $(whoami) ]] ; then
+  if [[ "" != "$user" ]] ; then
+    cp -f $0 /tmp/xmakessh
+    cd ${0%/*}
+    cp -f ecmd.sh ssh.exp /tmp
+    
+    su $user <<< "/tmp/xmakessh $arg"
+    #su $user <<< "$0 $arg"
+    exit
+  fi
+fi
+cd ${0%/*}
+
+sshp=~/.ssh
+
+# 设置遇到错误退出
+set -e
+
+# 设置通过expect执行命令的文件和对应用户的密码
+export expfile="ssh.exp"
+export PASS=${pass}
+nodelist=($(echo ${nodes//,/ }))
+# 在各个节点上执行创建.ssh目录的命令
+for node in ${nodelist[@]} ; do
+  ./ecmd.sh ssh $node ssh-keygen -t rsa || exit 1
+done
+
+# 生成一个完整的.ssh目录
+./ecmd.sh scp -r $nodelist:$sshp  /tmp
+cp /tmp/.ssh/id_rsa.pub  /tmp/.ssh/authorized_keys
+cp ~/.ssh/known_hosts /tmp/.ssh/
+
+# 分发文件
+for node in ${nodelist[@]} ; do
+  ./ecmd.sh scp /tmp/.ssh/*  $node:$sshp
+done
+
+rm -rf /tmp/.ssh
