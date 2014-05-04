@@ -24,24 +24,33 @@ rac 安装
 单机安装
 =====
 1. 执行
-  cd utility/standalone/; sh oracle_deploy.sh
-2. su - oracle
-cd /home/oracle
-unzip p10404530_112030_Linux-x86-64_1of7.zip
-unzip p10404530_112030_Linux-x86-64_2of7.zip
-chown –R oracle:oinstall database/
-cd  database
 
-# 安装软件 GUI
-#./runInstaller
-# 配置监听 GUI
-# netca
-#创建数据库 GUI
-#dbca
-6. 执行
-sqlplus / as sysdba <<EOF
-select instance_name,status from v\$instance;
-create user tpcc identified by tpcc;
-grant dba to tpcc;
-drop user tpcc;
-EOF
+  cd utility/standalone/; sh oracle_deploy.sh
+
+2. 安装数据库软件
+
+    su - oracle
+    cd /home/oracle
+    unzip p10404530_112030_Linux-x86-64_1of7.zip
+    unzip p10404530_112030_Linux-x86-64_2of7.zip
+    chown –R oracle:oinstall database/
+    cd  database
+     ./runInstaller
+
+3. 配置监听 GUI
+
+     netca
+
+4 创建数据库 GUI
+
+    dbca
+
+5. 执行
+
+    sqlplus / as sysdba <<EOF
+    select instance_name,status from v\$instance;
+    create user tpcc identified by tpcc;
+    grant dba to tpcc;
+    drop user tpcc;
+    EOF
+
