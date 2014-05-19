@@ -7,6 +7,13 @@ chown oracle:oinstall /home/oracle/*.rsp
 
 unzip linux.x64_11gR2_database_1of2.zip
 unzip linux.x64_11gR2_database_2of2.zip
+if [  -f database ]
+then
+    echo 
+else
+    echo "please put oracle software   in current directory!"
+    exit 1
+fi
 
 mv database/   /home/oracle/
 chown  -R oracle:oinstall /home/oracle/database/ 
@@ -15,18 +22,23 @@ chmod 777 -R /home/oracle/database/
 
 # 检查是否备份
 backup_file(){
-
   [ -f /etc/hosts.bak ] || cp /etc/hosts{,.bak}
   [ -f /etc/sysctl.conf.bak ] || cp /etc/sysctl.conf{,.bak}
-  [ -f /etc/security/limits.conf.bak ] || cp /etc/hosts{,.bak}
+  [ -f /etc/security/limits.conf.bak ] || cp /etc/security/limits.conf{,.bak}
 }
+restore_file(){
+  [ -f /etc/hosts.bak ] && cp /etc/hosts{.bak,}
+  [ -f /etc/sysctl.conf.bak ] && cp /etc/sysctl.conf{.bak,}
+  [ -f /etc/security/limits.conf.bak ] && cp /etc/security/limits.conf{.bak,}
+}
+
 set_env(){
 rpm -q syssat || rpm -ivh sysstat-8.1.5-7.32.1.x86_64.rpm
-export HOSTNAME=$your_host
-hostname $your_host
-#perl -p -i -e "s/HOSTNAME.*/HOSTNAME=$your_host/" /etc/sysconfig/network
-echo "$your_host" >> /etc/HOSTNAME
-echo "$your_ip  $your_host" >>/etc/hosts
+#export HOSTNAME=$your_host
+#hostname $your_host
+##perl -p -i -e "s/HOSTNAME.*/HOSTNAME=$your_host/" /etc/sysconfig/network
+#echo "$your_host" >> /etc/HOSTNAME
+#echo "$your_ip  $your_host" >>/etc/hosts
 
 
 #sysctl
@@ -78,7 +90,25 @@ EOF
 }
 
 install_soft(){
-su - oracle -c "/home/oracle/database/runInstaller -silent  -ignorePrereq -responseFile /home/oracle/db.rsp"
+if [ ! -f $oracle_db_soft_response_file ] 
+then 
+   echo $oracle_db_soft_response_file is not exsit!
+   exit 1
+fi
+if [ ! -f $netca_response_file ] 
+then 
+   echo $netca_response_file is not exsit!
+   exit 1
+fi
+if [ ! -f $dbca_response_file ] 
+then 
+   echo $dbca_response_file is not exsit!
+   exit 1
+fi
+
+
+
+su - oracle -c "/home/oracle/database/runInstaller -silent  -ignorePrereq -responseFile $oracle_db_soft_response_file"
 #检测安装完成
 while true
 do
@@ -99,10 +129,10 @@ chmod a+x /u01/app/oracle/product/11.2.0/db_1/root.sh
 mkdir  /root/.xauth/
 echo oracle >  /root/.xauth/export
 # 建立监听
-su - oracle -c "netca -silent -responsefile /home/oracle/netca.rsp "
+su - oracle -c "netca -silent -responsefile $netca_response_file "
 sleep 10
 # 建库
-su - oracle -c "  dbca -silent -responseFile /home/oracle/dbca.rsp"
+su - oracle -c "  dbca -silent -responseFile $dbca_response_file "
 sleep 10
 # 验证
 su - oracle -c "sqlplus / as sysdba <<EOF
@@ -140,9 +170,14 @@ groupdel oinstall
 #                    MAIN
 #
 ###########################################################
-your_ip=${1:-192.168.132.132}
-your_host=${2:-node1}
+#your_ip=${1:-192.168.132.132}
+#your_host=${2:-node1}
 oracle_user_passwd="111111"
+oracle_db_soft_response_file="/home/oracle/db.rsp"
+netca_response_file="/home/oracle/netca.rsp"
+dbca_response_file="/home/oracle/dbca.rsp"
+
+restore_file
 backup_file
 set_env
 prepare_soft
