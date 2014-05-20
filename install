@@ -1,44 +1,44 @@
 #!/usr/bin/env perl
-
+#use Perl::Tidy;
 use strict;
 use Smart::Comments;
 
 my $debug = 1;
 our %node_info ;
+
+
+sub analyze{
+    my $filename = "ip_map";
+    open my $fh,"< $filename" or die "Can not open $filename";
+    while(<$fh>){
+    	chomp;
+    	s/^\s*//;
+    	s/\s*$//;
+    	s/  / /g;
+    	next if /^#/;
+    	my ( $ip,$name ) = split ' ';
+    	if ( $name=~m/rac0*(\d+)$/i or $name=~m/node0*(\d+)$/i ){
+    		my $node_num = $1;
+    		$node_info{$ip}=$node_num;
+    	}else{
+    		next;
+    	}
+    }
+
+}
+
 sub universe{
-	my $cmd = "cd utility/rac/;sh universe.sh";
+    my $node_num = shift;
+	my $cmd = "cd utility/rac/;sh universe.sh $node_num";
 	&exe($cmd);
 }
 
-sub exe {
+sub exe{
 	my $cmd = shift;
 	if( $debug) {
 		print "$cmd\n";
 	} else {
-	  # system($cmd);
-	}
-}
-sub analyze{
-my $filename = "ip_map";
-open my $fh,"< $filename" or die "Can not open $filename";
-while(<$fh>){
-	chomp;
-	s/^\s*//;
-	s/\s*$//;
-	s/  / /g;
-	next if /^#/;
-	my ($ip,$name) = split ' ';
-	if($name=~m/node(\d+)$/ or $name=~m/node(\d+)$/ ){
-		my $node_num = $1;
-		$node_info{$ip}=$node_num;
-	}else{
-		next;
-	}
-}
-}
-sub print_node_info{
-	foreach(keys %node_info){
-	print $_ ,"  ",$node_info{$_},"\n";
+	   system($cmd);
 	}
 }
 sub no_passwd {
@@ -54,31 +54,13 @@ sub scp_script{
 	my $cmd = "scp -r ../oracle_deploy $ip:/root/";
 	&exe( $cmd); 
 }
-sub user_env{
-	my $num = shift;
-	my $cmd = "cd utility/rac/;sh user_env.sh";
-	&exe($cmd);
-	$cmd =  "perl -p -i -e  's/rac1/rac".${num}."/' /home/oracle/.bash_profile";
-	&exe($cmd);
-	$cmd =  "perl -p -i -e  's/ASM1/ASM".${num}."/' /home/grid/.bash_profile";
-	&exe($cmd);
-
-}
-sub set_hostname{
-    my $name = shift;
-    my $cmd = "sh utility/hostname.sh $name";
-    &exe($cmd);
-}
 sub node{
 	my $node_num = shift;
-	&universe;
-	&user_env($node_num);
-    &set_hostname("node".$node_num);  
+	&universe($node_num);
 }
 
 sub master{
     &no_passwd();
-    
     foreach(keys %node_info){
     	&scp_script($_);
     	my $cmd = "ssh $_ 'chmod a+x  oracle_deploy -R ;cd oracle_deploy;  ./install ".$node_info{$_}." '";
@@ -87,20 +69,21 @@ sub master{
     &no_passwd("oracle");
     &no_passwd("grid");
 }
-&analyze;
-#&print_node_info;
+
+sub main{
+    &analyze;
 ### %node_info
-if (@ARGV)
-{
-	my $node_num = $ARGV[0];
-	die "$node_num is not a  node number" unless $node_num =~ m/\d+/;
-	&node($node_num);
-}else{
-    &master;
+    if (@ARGV)
+    {
+    	my $node_num = $ARGV[0];
+    	die "$node_num is not a  node number" unless $node_num =~ m/\d+/;
+    	&node($node_num);
+    }else{
+        &master;
+    }
 }
 
-
-
+&main;
 
 
 

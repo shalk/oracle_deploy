@@ -22,14 +22,14 @@ chmod 777 -R /home/oracle/database/
 
 # 检查是否备份
 backup_file(){
-  [ -f /etc/hosts.bak ] || cp /etc/hosts{,.bak}
-  [ -f /etc/sysctl.conf.bak ] || cp /etc/sysctl.conf{,.bak}
-  [ -f /etc/security/limits.conf.bak ] || cp /etc/security/limits.conf{,.bak}
+  [ -f /etc/hosts.bak ] || cp  -rf /etc/hosts{,.bak}
+  [ -f /etc/sysctl.conf.bak ] || cp  -rf /etc/sysctl.conf{,.bak}
+  [ -f /etc/security/limits.conf.bak ] || cp -rf  /etc/security/limits.conf{,.bak}
 }
 restore_file(){
-  [ -f /etc/hosts.bak ] && cp /etc/hosts{.bak,}
-  [ -f /etc/sysctl.conf.bak ] && cp /etc/sysctl.conf{.bak,}
-  [ -f /etc/security/limits.conf.bak ] && cp /etc/security/limits.conf{.bak,}
+  [ -f /etc/hosts.bak ] && cp  -rf /etc/hosts{.bak,}
+  [ -f /etc/sysctl.conf.bak ] && cp -rf  /etc/sysctl.conf{.bak,}
+  [ -f /etc/security/limits.conf.bak ] && cp -rf  /etc/security/limits.conf{.bak,}
 }
 
 set_env(){
