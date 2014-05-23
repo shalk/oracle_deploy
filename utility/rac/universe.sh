@@ -2,9 +2,9 @@
 
 
 #config storage
+cd `dirname $0`
 
 oracle_passwd='111111'
-node_num=$1
 #sysconfig
 
 backup_file(){
@@ -12,6 +12,8 @@ backup_file(){
     [  -f /etc/pam.d/login.bak ] ||  cp -rf /etc/pam.d/login{,.bak}
     [  -f /etc/sysctl.conf.bak ] ||  cp -rf /etc/sysctl.conf{,.bak}
     [  -f /etc/hosts.bak ] ||  cp -rf /etc/hosts{,.bak}
+    [  -f /etc/profile.bak ] || cp -rf /etc/profile{,.bak}
+    [  -f /lib/udev/rules.d/50-udev-default.rules.bak ] || cp -rf /lib/udev/rules.d/50-udev-default.rules{,.bak}
 }
 
 restore_file(){
@@ -19,9 +21,24 @@ restore_file(){
     [  -f /etc/pam.d/login.bak ] &&  cp -rf /etc/pam.d/login{.bak,}
     [  -f /etc/sysctl.conf.bak ] &&  cp -rf /etc/sysctl.conf{.bak,}
     [  -f /etc/hosts.bak ] &&  cp -rf /etc/hosts{.bak,}
+    [  -f /etc/profile.bak ] && cp -rf /etc/profile{.bak,}
+    [  -f /lib/udev/rules.d/50-udev-default.rules.bak ] && cp -rf /lib/udev/rules.d/50-udev-default.rules{.bak,}
 }
 
 set_env(){
+
+cat >> /etc/profile <<EOF
+if [ \$USER = "oracle" ] || [ \$USER = "grid" ]; then
+        if [ \$SHELL = "/bin/ksh" ]; then
+              ulimit -u 16384
+              ulimit -n 65536
+        else
+              ulimit -u 16384 -n 65536
+        fi
+        umask 022
+fi
+EOF
+
 
 cat >> /etc/security/limits.conf <<EOF
 grid soft nproc 2047 
@@ -34,9 +51,9 @@ oracle soft nofile 1024
 oracle hard nofile 65536
 EOF
 
-cat >>/etc/pam.d/login <<EOF
-session required pam_limits.so
-EOF
+#cat >>/etc/pam.d/login <<EOF
+#session required pam_limits.so
+#EOF
 
 cat >>/etc/sysctl.conf <<EOF
 fs.aio-max-nr = 1048576 
@@ -56,13 +73,13 @@ mv /etc/ntp.conf /etc/ntp.org
 #config host
 
 cat  > /etc/hosts <<EOF
-127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+127.0.0.1   localhost 
+::1         localhost 
 EOF
 
 cat ../../ip_map >> /etc/hosts
 # set hostname
-your_host=node$node_num
+your_host=rac$node_num
 export HOSTNAME=$your_host
 hostname $your_host
  [ -f /etc/sysconfig/network ] &&  perl -p -i -e "s/HOSTNAME.*/HOSTNAME=$your_host/" /etc/sysconfig/network
@@ -72,7 +89,7 @@ userdel -r oracle
 userdel -r grid
 groupdel oinstall
 groupdel dba
-groupdel poer
+groupdel oper
 groupdel asmadmin
 groupdel asmoper
 groupdel asmdba
@@ -106,28 +123,67 @@ chown -R oracle:oinstall /oracle/app/oracle
 chmod -R 775 /oracle/app/oracle 
 chmod -R 775 /oracle/app/grid
 }
+uninstall(){
+rm -rf /oracle/app/
+rm -rf /oracle/app/oraInventory/
+rm -rf /usr/local/bin/dbhome
+rm -rf /usr/local/bin/oraenv
+rm -rf /usr/local/bin/coraenv
+rm -rf /etc/oratabb
+rm -rf /etc/oraInst.loc
+rm -rf /tmp/.oracle
+userdel -r oracle
+userdel -r grid
+groupdel oinstall
+groupdel dba
+groupdel oper
+groupdel asmadmin
+groupdel asmoper
+groupdel asmdba
+}
 user_env(){
-cat >>/home/oracle/.bash_profile <<EOF
+cat > /home/grid/.bash_profile <<EOF
 ORACLE_SID=+ASM${node_num}; export ORACLE_SID 
 ORACLE_BASE=/oracle/app/grid; export ORACLE_BASE 
-ORACLE_HOME=/home/grid/product/11.2.0; export ORACLE_HOME
+ORACLE_HOME=/oracle/app/product/11.2.0; export ORACLE_HOME
 PATH=\$ORACLE_HOME/bin:\$PATH; export PATH 
 LD_LIBRARY_PATH=\$ORACLE_HOME/lib:/lib:/usr/lib; export LD_LIBRARY_PATH
 EOF
 
-cat >>/home/grid/.bash_profile <<EOF
+cat > /home/oracle/.bash_profile <<EOF
 ORACLE_BASE=/oracle/app/oracle; export ORACLE_BASE 
 ORACLE_HOME=\$ORACLE_BASE/product/11.2.0; export ORACLE_HOME 
 ORACLE_SID=rac${node_num}; export ORACLE_SID
 PATH=\$ORACLE_HOME/bin:\$PATH; export PATH 
 LD_LIBRARY_PATH=\$ORACLE_HOME/lib:/lib:/usr/lib; export LD_LIBRARY_PATH
 EOF
+chown grid:oinstall /home/grid/.bash_profile
+chown oracle:oinstall /home/oracle/.bash_profile
+chmod 644 /home/grid/.bash_profile
+chmod 644 /home/oracle/.bash_profile
 }
 
-restore_file
-backup_file
-set_env
-user_env
+case $1 in
+  install) 
+	node_num=$2 
+        if [ X$node_num == X"" ]
+        then
+            echo "usage:$0  install nodenum "
+            exit 1
+        fi
+        restore_file
+        backup_file
+        set_env
+        user_env
+        ;;
+  uninstall)
+        restore_file
+        uninstall
+        ;;
+   *)
+        echo "usage:$0 [install nodenum | uninstall] "
+       ;;
+esac
 exit 0 
 
 

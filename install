@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
 #use Perl::Tidy;
 use strict;
-use Smart::Comments;
+#use Smart::Comments;
 
-my $debug = 1;
+my $debug = 0;
 our %node_info ;
 
 
@@ -29,9 +29,10 @@ sub analyze{
 
 sub universe{
     my $node_num = shift;
-	my $cmd = "cd utility/rac/;sh universe.sh $node_num";
+	my $cmd = "cd utility/rac/;sh universe.sh install $node_num";
 	&exe($cmd);
 }
+
 
 sub exe{
 	my $cmd = shift;
@@ -46,7 +47,7 @@ sub no_passwd {
     my $passwd =  shift || "111111";
     my @nodelist=  keys %node_info;
     my $node= join "," ,@nodelist;
-    my $cmd = "cd utility/nopasswd/; ./xmakessh  --user $user --pass  $passwd --nodes  $node  ; cd ../../ ";
+    my $cmd = "cd utility/no_passwd/; ./xmakessh  --user $user --pass  $passwd --nodes  $node  ; cd ../../ ";
     &exe( $cmd); 
 }
 sub scp_script{
@@ -54,10 +55,24 @@ sub scp_script{
 	my $cmd = "scp -r ../oracle_deploy $ip:/root/";
 	&exe( $cmd); 
 }
+sub set_storage{
+     my $cmd = "cd utility/rac/; sh storage.sh install ";
+     &exe($cmd);
+}
 sub node{
 	my $node_num = shift;
 	&universe($node_num);
+        &set_storage;
 }
+
+sub uninstall{
+   foreach(keys %node_info){
+   &scp_script($_);
+   my $cmd = "ssh $_ 'chmod a+x  oracle_deploy -R ;cd oracle_deploy;  cd  utility/rac/; sh storage.sh uninstall;sh universe.sh uninstall ' ";
+   &exe($cmd);
+   }
+}
+
 
 sub master{
     &no_passwd();
@@ -73,14 +88,23 @@ sub master{
 sub main{
     &analyze;
 ### %node_info
-    if (@ARGV)
+    my $type = $ARGV[0];
+    if ($type =~ /\d/)
     {
     	my $node_num = $ARGV[0];
     	die "$node_num is not a  node number" unless $node_num =~ m/\d+/;
     	&node($node_num);
-    }else{
+    }elsif($type eq "install")
+     {
         &master;
+    }elsif($type eq "uninstall")
+    {
+       &uninstall 
+    }else{ 
+     print "Usage:$0 [install | uninstall | nodenum]\n";
+    
     }
+   
 }
 
 &main;

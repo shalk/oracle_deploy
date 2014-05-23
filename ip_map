@@ -1,7 +1,7 @@
-12.12.12.1 node1
-12.12.12.2 node2
-12.12.12.3 node1-vip
-12.12.12.4 node2-vip
-10.10.10.1 node1-priv
-10.10.10.2 node2-priv
-12.12.12.5 racsan
+10.5.101.17 rac1
+10.5.101.18 rac2
+10.5.101.3 rac1-vip
+10.5.101.4 rac2-vip
+1.1.1.1 rac1-priv
+1.1.1.2 rac2-priv
+10.5.101.1 racscan

@@ -45,7 +45,7 @@ fi
 
 rm -rf /tmp/.ssh
 if [[ "root" == $(whoami) ]] ; then
-  if [[ "" != "$user" ]] ; then
+  if [[ "" != "$user" && "$user" != "root" ]] ; then
     cp -f $0 /tmp/xmakessh
     cd ${0%/*}
     cp -f ecmd.sh ssh.exp /tmp
