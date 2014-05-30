@@ -3,7 +3,7 @@
 use strict;
 #use Smart::Comments;
 
-my $debug = 0;
+my $debug = 1;
 our %node_info ;
 
 
@@ -84,9 +84,12 @@ sub master{
     &no_passwd("oracle");
     &no_passwd("grid");
 }
-
+sub modify_o_conf{
+}
 sub main{
     &analyze;
+    &analyze_disk;
+    &modify_o_conf;
 ### %node_info
     my $type = $ARGV[0];
     if ($type =~ /\d/)

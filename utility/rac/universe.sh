@@ -1,8 +1,18 @@
-#config network
+#
 
 
-#config storage
 cd `dirname $0`
+if  [ ! -f ../../o.conf ] ;then
+    echo "o.conf is not exist"
+    exit 1
+fi	
+
+if  [ ! -f ../../ip_map ] ;then
+    echo "ip_map is not exist"
+    exit 1
+fi	
+
+source ../../o.conf
 
 oracle_passwd='111111'
 #sysconfig
@@ -26,6 +36,9 @@ restore_file(){
 }
 
 set_env(){
+
+rpm -ivh ../rpm/libcap1-1.10-6.10.x86_64.rpm
+rpm -e orarun-1.9-172.20.21.54
 
 cat >> /etc/profile <<EOF
 if [ \$USER = "oracle" ] || [ \$USER = "grid" ]; then
@@ -55,7 +68,10 @@ EOF
 #session required pam_limits.so
 #EOF
 
+shmmax=`cat /proc/meminfo  | grep MemTotal | awk '{print $2*512}' `
+sed -i '/kernel.shmmax/d' /etc/sysctl.conf
 cat >>/etc/sysctl.conf <<EOF
+kernel.shmmax = $shmmax
 fs.aio-max-nr = 1048576 
 fs.file-max = 6815744 
 kernel.shmmni = 4096 
@@ -66,6 +82,7 @@ net.core.rmem_max = 4194304
 net.core.wmem_default = 262144 
 net.core.wmem_max = 1048586
 EOF
+
 #stop ntp
 /etc/init.d/ntpd stop 
 chkconfig ntpd off 
@@ -144,16 +161,16 @@ groupdel asmdba
 user_env(){
 cat > /home/grid/.bash_profile <<EOF
 ORACLE_SID=+ASM${node_num}; export ORACLE_SID 
-ORACLE_BASE=/oracle/app/grid; export ORACLE_BASE 
-ORACLE_HOME=/oracle/app/product/11.2.0; export ORACLE_HOME
+ORACLE_BASE=${grid_oracle_base}; export ORACLE_BASE 
+ORACLE_HOME=${grid_oracle_home}; export ORACLE_HOME
 PATH=\$ORACLE_HOME/bin:\$PATH; export PATH 
 LD_LIBRARY_PATH=\$ORACLE_HOME/lib:/lib:/usr/lib; export LD_LIBRARY_PATH
 EOF
 
 cat > /home/oracle/.bash_profile <<EOF
-ORACLE_BASE=/oracle/app/oracle; export ORACLE_BASE 
-ORACLE_HOME=\$ORACLE_BASE/product/11.2.0; export ORACLE_HOME 
-ORACLE_SID=rac${node_num}; export ORACLE_SID
+ORACLE_BASE=${oracle_oracle_base}; export ORACLE_BASE 
+ORACLE_HOME=${oracle_oracle_home}; export ORACLE_HOME 
+ORACLE_SID=${oracle_sid_prefix}${node_num}; export ORACLE_SID
 PATH=\$ORACLE_HOME/bin:\$PATH; export PATH 
 LD_LIBRARY_PATH=\$ORACLE_HOME/lib:/lib:/usr/lib; export LD_LIBRARY_PATH
 EOF
