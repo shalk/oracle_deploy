@@ -87,6 +87,8 @@ export ORACLE_SID=orcl
 export LD_LIBRARY_PATH=/u01/app/oracle/product/11.2.0/db_1/lib:\$LD_LIBRARY_PATH
 export PATH=\$ORACLE_HOME/bin:\$HOME/bin:/sbin:\$PATH
 EOF
+chown  oracle::oinstall /home/oracle/.bash_profile
+chmod  644 /home/oracle/.bash_profile
 }
 
 install_soft(){

@@ -62,13 +62,14 @@ sub set_storage{
 sub node{
 	my $node_num = shift;
 	&universe($node_num);
-        &set_storage;
+#    &set_storage;
 }
 
 sub uninstall{
    foreach(keys %node_info){
    &scp_script($_);
-   my $cmd = "ssh $_ 'chmod a+x  oracle_deploy -R ;cd oracle_deploy;  cd  utility/rac/; sh storage.sh uninstall;sh universe.sh uninstall ' ";
+#   my $cmd = "ssh $_ 'chmod a+x  oracle_deploy -R ;cd oracle_deploy;  cd  utility/rac/; sh storage.sh uninstall;sh universe.sh uninstall ' ";
+   my $cmd = "ssh $_ 'chmod a+x  oracle_deploy -R ;cd oracle_deploy;  cd  utility/rac/; sh universe.sh uninstall ' ";
    &exe($cmd);
    }
 }
@@ -88,7 +89,7 @@ sub modify_o_conf{
 }
 sub main{
     &analyze;
-    &analyze_disk;
+#    &analyze_disk;
     &modify_o_conf;
 ### %node_info
     my $type = $ARGV[0];
