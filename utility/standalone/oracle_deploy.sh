@@ -7,7 +7,7 @@ chown oracle:oinstall /home/oracle/*.rsp
 
 unzip linux.x64_11gR2_database_1of2.zip
 unzip linux.x64_11gR2_database_2of2.zip
-if [  -f database ]
+if [  -d database ]
 then
     echo 
 else
@@ -87,7 +87,7 @@ export ORACLE_SID=orcl
 export LD_LIBRARY_PATH=/u01/app/oracle/product/11.2.0/db_1/lib:\$LD_LIBRARY_PATH
 export PATH=\$ORACLE_HOME/bin:\$HOME/bin:/sbin:\$PATH
 EOF
-chown  oracle::oinstall /home/oracle/.bash_profile
+chown  oracle:oinstall /home/oracle/.bash_profile
 chmod  644 /home/oracle/.bash_profile
 }
 

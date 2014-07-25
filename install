@@ -3,7 +3,7 @@
 use strict;
 #use Smart::Comments;
 
-my $debug = 1;
+my $debug = 0;
 our %node_info ;
 
 
@@ -76,14 +76,14 @@ sub uninstall{
 
 
 sub master{
-    &no_passwd();
+    &no_passwd("root","111111");
     foreach(keys %node_info){
     	&scp_script($_);
     	my $cmd = "ssh $_ 'chmod a+x  oracle_deploy -R ;cd oracle_deploy;  ./install ".$node_info{$_}." '";
     	&exe($cmd);
     }
-    &no_passwd("oracle");
-    &no_passwd("grid");
+    &no_passwd("oracle","111111");
+    &no_passwd("grid","111111");
 }
 sub modify_o_conf{
 }

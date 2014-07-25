@@ -21,19 +21,19 @@ chmod 666 /dev/urandom
 chmod 666 /dev/random
 
 # make sure connect
-su - grid -c 'ssh rac1 date'
-su - grid -c 'ssh rac2 date'
-su - oracle -c 'ssh rac2 date'
-su - oracle -c 'ssh rac1 date'
-ssh rac1 date
-ssh rac2 date
+su - grid -c 'ssh -o StrictHostKeyChecking=no rac1 date'
+su - grid -c 'ssh -o StrictHostKeyChecking=no rac2 date'
+su - oracle -c 'ssh -o StrictHostKeyChecking=no rac2 date'
+su - oracle -c 'ssh -o StrictHostKeyChecking=no rac1 date'
+ssh -o StrictHostKeyChecking=no rac1 date
+ssh -o StrictHostKeyChecking=no rac2 date
 ssh rac2 "
-su - grid -c 'ssh rac1 date'
-su - grid -c 'ssh rac2 date'
-su - oracle -c 'ssh rac2 date'
-su - oracle -c 'ssh rac1 date'
-ssh rac1 date
-ssh rac2 date
+su - grid -c 'ssh -o StrictHostKeyChecking=no rac1 date'
+su - grid -c 'ssh -o StrictHostKeyChecking=no rac2 date'
+su - oracle -c 'ssh -o StrictHostKeyChecking=no rac2 date'
+su - oracle -c 'ssh -o StrictHostKeyChecking=no rac1 date'
+ssh -o StrictHostKeyChecking=no rac1 date
+ssh -o StrictHostKeyChecking=no rac2 date
 "
 
 # prepare software
@@ -43,10 +43,10 @@ su - grid  -c " [ -d /home/grid/grid ] ||  unzip ${software_path}/${grid_softnam
 
 
 # prepare rsp file
-touch  /tmp/grid_clean.sh
-> /tmp/grid_clean.sh
+touch  $grid_rsp_file
+> $grid_rsp_file
 
-cat >> /tmp/grid_clean.sh <<EOF 
+cat >> $grid_rsp_file <<EOF 
 oracle.install.responseFileVersion=/oracle/install/rspfmt_crsinstall_response_schema_v11_2_0
 ORACLE_HOSTNAME=${grid_hostname}
 INVENTORY_LOCATION=${grid_base_base}/oraInventory
@@ -94,7 +94,7 @@ PROXY_USER=
 PROXY_PWD=
 PROXY_REALM=
 EOF
-chmod 777 /tmp/grid_clean.rsp
+chmod 777 $grid_rsp_file
 
 
 # setup x11
@@ -104,7 +104,7 @@ echo grid > ~/.xauth/export
 
 
 # execute silent mode 
-su - grid -c 'cd grid; ./runInstaller -ignorePrereq -silent -responseFile /tmp/grid_clean.rsp'
+su - grid -c "cd grid; ./runInstaller -ignorePrereq -silent -responseFile ${grid_rsp_file}"
 
 # pause
 echo  "###########################"

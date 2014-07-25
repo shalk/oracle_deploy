@@ -18,7 +18,8 @@ ssh rac1 " su - oracle -c ' mkdir \$ORACLE_HOME -p ' "
 chmod 777 ${software_path}/${oracle_softname1} 
 chmod 777 ${software_path}/${oracle_softname2} 
 
-su - oracle  -c " unzip -o ${software_path}/${oracle_softname1}   -d /home/oracle && unzip -o  ${software_path}/${oracle_softname2} -o -d /home/oracle "
+su - oracle  -c " unzip -o ${software_path}/${oracle_softname1}  -d /home/oracle "
+su - oracle  -c " unzip -o ${software_path}/${oracle_softname2}  -d /home/oracle "
 
 # prepare rsp file
 touch $oracle_rsp_file
