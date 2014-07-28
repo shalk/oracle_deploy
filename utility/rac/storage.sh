@@ -1,6 +1,10 @@
 #!/bin/bash
 cd `dirname $0`
-
+if  [ ! -f ../../disk_map ] ;then
+    echo "disk_map is not exist"
+    exit 1
+fi	
+disk_map='../../disk_map'
 backup_file(){
  [ -f  /etc/udev/rules.d/99-oracle-raw.rules.bak ] || cp -rf /etc/udev/rules.d/99-oracle-raw.rules{,.bak} || touch /etc/udev/rules.d/99-oracle-raw.rules.bak
  [ -f /etc/raw.bak ] || cp -rf /etc/raw{,.bak} || touch /etc/raw.bak
@@ -10,32 +14,27 @@ restore_file(){
  [ -f /etc/raw.bak ] &&  cp -rf /etc/raw{.bak,}
 }
 
-setup_storage(){
-#login
+stor_login(){
 storage_flag=`iscsiadm -m discovery -t sendtargets -p $storage_ip | awk '{ print $2 }' `
 iscsiadm -m  node  -T $storage_flag  -p $storage_ip  -l
-#fdisk -l 2>&1 /dev/null
+}
+
+setup_storage(){
+
+perl -i -ne 's/ / /g;s/^ //g;s/ $//g;s/#.*//g; next if /^\s*$/ ; print  ' ../../disk_map 
+
 sleep 10
-diskArray=`ls /dev/sd*  | grep sda -v | sort | awk -F/ '{print $3}'`
-count=1
-#set raw
-for disk in $diskArray
-do
-   echo raw${count}:$disk >> /etc/raw
-   ((count++))
-done
+diskArray=`awk -F: '{print $2}' ../../disk_map`
+cp -rf ../../disk_map  /etc/raw
 
 chkconfig raw on
-set owner
 
 #set udeve file 
-count=1
 for disk in $diskArray
 do
-    chmod 666 /dev/$disk
-#    echo "KERNEL==\"raw${count}\", SUBSYSTEM==\"raw\", NAME=\"${disk}\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\" " >> /etc/udev/rules.d/99-oracle-raw.rules
-    ((count++))
+    chmod 666 $disk
 done
+
 echo "SUBSYSTEM==\"raw\", KERNEL==\"raw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
 rcraw start
 }
@@ -47,19 +46,16 @@ for i in $rawArray
 do
    raw $i 0 0 
 done
-diskArray=`ls /dev/sd*  | grep sda -v | sort | awk -F/ '{print $3}'`
-for i in $diskArray
-do
-   rm -rf  /dev/$i
-done 
-
 rcraw stop
+}
+
+stor_logout(){
 storage_flag=`iscsiadm -m discovery -t sendtargets -p $storage_ip | awk '{ print $2 }' `
 iscsiadm -m  node  -p $storage_ip  -T $storage_flag  -u
 }
 show_disk(){
 echo =========================================  
-ls -l /dev/sd*
+awk -F: '{print $2}' ../../disk_map | xargs ls -l
 echo =========================================  
 ls -l  /dev/raw
 echo =========================================  
@@ -71,13 +67,13 @@ case $1 in
   install) 
         restore_file
         backup_file
-	setup_storage
-	show_disk
+        setup_storage
+	    show_disk
         ;;
   uninstall)
         uninstall
         restore_file
-	show_disk
+	    show_disk
         ;;
    *)
         echo "usage:$0 [install  | uninstall] "

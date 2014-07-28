@@ -5,7 +5,7 @@ cd `dirname $0`
 # setup parameter
 source ../../o.conf
 grid_base_base=`dirname $grid_oracle_base `
-
+sh check.sh
 
 
 

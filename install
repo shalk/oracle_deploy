@@ -24,7 +24,7 @@ sub analyze{
     		next;
     	}
     }
-
+    close($fh)
 }
 
 sub universe{
@@ -50,19 +50,23 @@ sub no_passwd {
     my $cmd = "cd utility/no_passwd/; ./xmakessh  --user $user --pass  $passwd --nodes  $node  ; cd ../../ ";
     &exe( $cmd); 
 }
+
 sub scp_script{
 	my $ip = shift;
 	my $cmd = "scp -r ../oracle_deploy $ip:/root/";
 	&exe( $cmd); 
 }
+
 sub set_storage{
+     die "file disk_map  is not exsit " if -f "disk_map";
      my $cmd = "cd utility/rac/; sh storage.sh install ";
      &exe($cmd);
 }
+
 sub node{
 	my $node_num = shift;
 	&universe($node_num);
-#    &set_storage;
+    &set_storage;
 }
 
 sub uninstall{
