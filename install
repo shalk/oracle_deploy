@@ -58,14 +58,14 @@ sub scp_script{
 }
 
 sub set_storage{
-     die "file disk_map  is not exsit " if -f "disk_map";
+     die "file disk_map  is not exsit " if ! -f "disk_map";
      my $cmd = "cd utility/rac/; sh storage.sh install ";
      &exe($cmd);
 }
 
 sub node{
-	my $node_num = shift;
-	&universe($node_num);
+    my $node_num = shift;
+    &universe($node_num);
     &set_storage;
 }
 

@@ -6,7 +6,10 @@ cd `dirname $0`
 source ../../o.conf
 grid_base_base=`dirname $grid_oracle_base `
 sh check.sh
-
+if [ $? != 0 ] ; then
+    echo "check failed"
+    exit 1
+fi
 
 
 #fix permissive

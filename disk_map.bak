@@ -1,7 +1,0 @@
-#CRS
-raw1:/dev/sdb
-raw2:/dev/sdc
-raw3:/dev/sdd
-#DATA
-raw4:/dev/sde
-raw5:/dev/sdf
