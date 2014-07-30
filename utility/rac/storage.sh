@@ -26,7 +26,7 @@ perl -i -ne 's/ / /g;s/^ //g;s/ $//g;s/#.*//g; next if /^\s*$/ ; print  ' ../../
 sleep 10
 diskArray=`awk -F: '{print $2}' ../../disk_map`
 cp -rf ../../disk_map  /etc/raw
-
+sed -i 's/\/dev\///' /etc/raw
 chkconfig raw on
 
 #set udeve file 
