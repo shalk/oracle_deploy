@@ -3,7 +3,7 @@
 cd `dirname $0`
 
 # setup parameter
-source ../../o.conf
+source ../../rac.cfg
 grid_base_base=`dirname $grid_oracle_base `
 sh check.sh
 if [ $? != 0 ] ; then
@@ -105,9 +105,9 @@ chmod 777 $grid_rsp_file
 mkdir ~/.xauth/
 echo grid > ~/.xauth/export
 
-
+GRID_LOG='grid.log'
 # execute silent mode 
-su - grid -c "cd grid; ./runInstaller -ignorePrereq -silent -responseFile ${grid_rsp_file}"
+su - grid -c "cd grid; rm $GRID_LOG; ./runInstaller -ignorePrereq -silent -responseFile ${grid_rsp_file} | tee $GRID_LOG "
 
 # pause
 echo  "###########################"

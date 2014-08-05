@@ -1,10 +1,11 @@
 #!/bin/bash
 cd `dirname $0`
-if  [ ! -f ../../disk_map ] ;then
-    echo "disk_map is not exist"
+if  [ ! -f ../../rac.cfg ] ;then
+    echo "rac.cfg is not exist"
     exit 1
 fi	
-disk_map='../../disk_map'
+source ../../rac.cfg
+
 backup_file(){
  [ -f  /etc/udev/rules.d/99-oracle-raw.rules.bak ] || cp -rf /etc/udev/rules.d/99-oracle-raw.rules{,.bak} || touch /etc/udev/rules.d/99-oracle-raw.rules.bak
  [ -f /etc/raw.bak ] || cp -rf /etc/raw{,.bak} || touch /etc/raw.bak
@@ -21,21 +22,27 @@ iscsiadm -m  node  -T $storage_flag  -p $storage_ip  -l
 
 setup_storage(){
 
-perl -i -ne 's/ / /g;s/^ //g;s/ $//g;s/#.*//g; next if /^\s*$/ ; print  ' ../../disk_map 
-
 sleep 10
-diskArray=`awk -F: '{print $2}' ../../disk_map`
-cp -rf ../../disk_map  /etc/raw
+cat > /etc/raw  <<EOF
+raw1:$raw1
+raw2:$raw2
+raw3:$raw3
+raw4:$raw4
+raw5:$raw5
+EOF
 sed -i 's/\/dev\///' /etc/raw
-chkconfig raw on
+
 
 #set udeve file 
+diskArray="$raw1 $raw2 $raw3 $raw4 $raw5"
+
 for disk in $diskArray
 do
     chmod 666 $disk
 done
 
 echo "SUBSYSTEM==\"raw\", KERNEL==\"raw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
+chkconfig raw on
 rcraw start
 }
 
@@ -54,8 +61,12 @@ storage_flag=`iscsiadm -m discovery -t sendtargets -p $storage_ip | awk '{ print
 iscsiadm -m  node  -p $storage_ip  -T $storage_flag  -u
 }
 show_disk(){
+diskArray="$raw1 $raw2 $raw3 $raw4 $raw5"
 echo =========================================  
-awk -F: '{print $2}' ../../disk_map | xargs ls -l
+for disk in $diskArray
+do
+    ls -l $disk
+done
 echo =========================================  
 ls -l  /dev/raw
 echo =========================================  

@@ -2,17 +2,13 @@
 
 
 cd `dirname $0`
-if  [ ! -f ../../o.conf ] ;then
-    echo "o.conf is not exist"
+if  [ ! -f ../../rac.cfg ] ;then
+    echo "rac.cfg is not exist"
     exit 1
 fi	
 
-if  [ ! -f ../../ip_map ] ;then
-    echo "ip_map is not exist"
-    exit 1
-fi	
 
-source ../../o.conf
+source ../../rac.cfg
 
 oracle_passwd='111111'
 #sysconfig
@@ -92,9 +88,16 @@ mv /etc/ntp.conf /etc/ntp.org
 cat  > /etc/hosts <<EOF
 127.0.0.1   localhost 
 ::1         localhost 
+$rac1_ip    rac1
+$rac2_ip    rac2
+$rac1_priv_ip  rac1-priv
+$rac2_priv_ip  rac2-priv
+$rac1_vip   rac1-vip
+$rac2_vip   rac2-vip
+$racscan_ip racscan
 EOF
 
-cat ../../ip_map >> /etc/hosts
+
 # set hostname
 your_host=rac$node_num
 export HOSTNAME=$your_host

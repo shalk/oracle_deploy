@@ -3,7 +3,7 @@ cd `dirname $0`
 
 
 # setup parameter
-source ../../o.conf
+source ../../rac.cfg
 oracle_base_base=`dirname  $oracle_oracle_base `
 
 

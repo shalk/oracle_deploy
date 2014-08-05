@@ -1,0 +1,43 @@
+#!/bin/bash
+cd `dirname $0`
+single_install(){
+    if ! cd utility/standalone/  ; then
+        echo "utility/standalone/ directory is not exist"
+        exit 1
+    fi
+    sh oracle_deploy.sh $@
+}
+rac_install(){
+    if ! cd utility/rac/  ; then
+        echo "utility/rac/ directory is not exist"
+        exit 1
+    fi
+    sh oracle_rac_install.sh $@
+}
+oraInt_usage(){
+    if ! cd utility/ ; then
+        echo "utility directory is not exist"
+        exit 1
+    fi
+    sh oraInst_usage
+}
+
+var=$1
+shift
+case $var in
+    -h|--help|-help)
+      oraInt_usage | less
+      exit 0
+      ;;
+    single)
+       single_install $@
+      ;;
+    rac)
+      rac_install $@
+      ;;
+    *)
+    oraInt_usage | less
+    exit 0
+    ;;
+esac
+

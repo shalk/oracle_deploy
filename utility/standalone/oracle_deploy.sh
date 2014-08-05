@@ -1,21 +1,32 @@
 #!/bin/bash
 
+source ../../single.cfg
+
 prepare_soft(){
 
 cp -rf *.rsp /home/oracle
 chown oracle:oinstall /home/oracle/*.rsp
 
-unzip linux.x64_11gR2_database_1of2.zip
-unzip linux.x64_11gR2_database_2of2.zip
-if [  -d database ]
-then
-    echo 
-else
-    echo "please put oracle software   in current directory!"
+ [ -f ${software_path}/${oracle_softname1} ] || exit 1 
+ [ -f ${software_path}/${oracle_softname2} ] || exit 1 
+chmod 777 ${software_path}/${oracle_softname1} 
+chmod 777 ${software_path}/${oracle_softname2} 
+
+su - oracle  -c " unzip -o ${software_path}/${oracle_softname1}  -d /home/oracle "
+su - oracle  -c " unzip -o ${software_path}/${oracle_softname2}  -d /home/oracle "
+
+cd `dirname $0`
+echo "$oracle_soft1_md5  ${software_path}/${oracle_softname1}" | md5sum -c 
+if [[ $? != 0 ]];then
+    echo " ${software_path}/${oracle_softname1} is not correct file"
+    exit 1
+fi
+echo "$oracle_soft2_md5  ${software_path}/${oracle_softname2}" | md5sum -c
+if [[ $? != 0 ]];then
+    echo "${software_path}/${oracle_softname2}  is not correct file"
     exit 1
 fi
 
-mv database/   /home/oracle/
 chown  -R oracle:oinstall /home/oracle/database/ 
 chmod 777 -R /home/oracle/database/
 }
@@ -30,6 +41,15 @@ restore_file(){
   [ -f /etc/hosts.bak ] && cp  -rf /etc/hosts{.bak,}
   [ -f /etc/sysctl.conf.bak ] && cp -rf  /etc/sysctl.conf{.bak,}
   [ -f /etc/security/limits.conf.bak ] && cp -rf  /etc/security/limits.conf{.bak,}
+}
+
+open_X11(){
+mkdir  /root/.xauth/
+echo oracle >  /root/.xauth/export
+}
+
+close_X11(){
+rm -rf /root/.xauth/
 }
 
 set_env(){
@@ -62,9 +82,9 @@ userdel -r oracle
 groupdel dba
 groupdel oinstall
 
-/usr/sbin/groupadd oinstall
-/usr/sbin/groupadd dba
-/usr/sbin/useradd -m -g oinstall -G dba oracle
+groupadd oinstall
+groupadd dba
+useradd -m -g oinstall -G dba oracle
 echo $oracle_user_passwd | passwd oracle --stdin
 
 cat  >> /etc/security/limits.conf <<EOF
@@ -75,46 +95,37 @@ oracle  hard    nofile  65536
 EOF
 
 # set install path
-mkdir -p /u01/app/oracle
-chown -R oracle:oinstall /u01/app/oracle
-chmod -R 775 /u01/app/oracle
-mkdir -p /u01/app/oraInventory
-chown oracle:oinstall /u01/app/oraInventory
+oracle_base_base=`dirname $oracle_oracle_base`
+mkdir -p $oracle_oracle_base
+chown -R oracle:oinstall $oracle_oracle_base
+chmod -R 775 $oracle_oracle_base
+mkdir -p ${oracle_base_base}/oraInventory
+chown oracle:oinstall ${oracle_base_base}/oraInventory
+
 cat >> /home/oracle/.bash_profile  <<EOF
-export ORACLE_BASE=/u01/app/oracle
-export ORACLE_HOME=\$ORACLE_BASE/product/11.2.0/db_1
-export ORACLE_SID=orcl
-export LD_LIBRARY_PATH=/u01/app/oracle/product/11.2.0/db_1/lib:\$LD_LIBRARY_PATH
+export ORACLE_BASE=${oracle_oracle_base}
+export ORACLE_HOME=${oracle_oracle_home}
+export ORACLE_SID=${oracle_sid}
+export LD_LIBRARY_PATH=${oracle_ld_lib_path}:\$LD_LIBRARY_PATH
 export PATH=\$ORACLE_HOME/bin:\$HOME/bin:/sbin:\$PATH
 EOF
 chown  oracle:oinstall /home/oracle/.bash_profile
 chmod  644 /home/oracle/.bash_profile
+
 }
 
-install_soft(){
+db_install(){
 if [ ! -f $oracle_db_soft_response_file ] 
 then 
    echo $oracle_db_soft_response_file is not exsit!
    exit 1
 fi
-if [ ! -f $netca_response_file ] 
-then 
-   echo $netca_response_file is not exsit!
-   exit 1
-fi
-if [ ! -f $dbca_response_file ] 
-then 
-   echo $dbca_response_file is not exsit!
-   exit 1
-fi
-
-
-
+rm ${oracle_base_base}/oraInventory/logs/install*  -rf
 su - oracle -c "/home/oracle/database/runInstaller -silent  -ignorePrereq -responseFile $oracle_db_soft_response_file"
 #检测安装完成
 while true
 do
-    if grep "Unloading Setup Driver" /u01/app/oraInventory/logs/install*  2>&1 >/dev/null
+    if grep "Unloading Setup Driver" ${oracle_base_base}/oraInventory/logs/install*  2>&1 >/dev/null
     then
         break
     fi
@@ -122,16 +133,37 @@ do
 done
 
 # 执行root脚本
-chmod a+x /u01/app/oraInventory/orainstRoot.sh
-/u01/app/oraInventory/orainstRoot.sh
-chmod a+x /u01/app/oracle/product/11.2.0/db_1/root.sh
-/u01/app/oracle/product/11.2.0/db_1/root.sh 
+chmod a+x ${oracle_base_base}/oraInventory/orainstRoot.sh
+${oracle_base_base}/oraInventory/orainstRoot.sh
+chmod a+x ${oracle_base_base}/oracle/product/11.2.0/db_1/root.sh
+${oracle_base_base}/oracle/product/11.2.0/db_1/root.sh 
+
+}
+
+netca_install(){
+
+if [ ! -f $netca_response_file ] 
+then 
+   echo $netca_response_file is not exsit!
+   exit 1
+fi
+open_X11
+# 建立监听
+su - oracle -c "netca -silent -responsefile $netca_response_file "
+sleep 10
+
+}
+dbca_install(){
+if [ ! -f $dbca_response_file ] 
+then 
+   echo $dbca_response_file is not exsit!
+   exit 1
+fi
+
 
 #打开切换用户的GUI
 mkdir  /root/.xauth/
 echo oracle >  /root/.xauth/export
-# 建立监听
-su - oracle -c "netca -silent -responsefile $netca_response_file "
 sleep 10
 # 建库
 su - oracle -c "  dbca -silent -responseFile $dbca_response_file "
@@ -145,26 +177,39 @@ EOF
 "
 }
 
-open_X11{
-mkdir  /root/.xauth/
-echo oracle >  /root/.xauth/export
+uninstall(){
+su - oracle -c " sqlplus / nolog <<EOF
+connect / as sysdba;
+shutdown immediate;
+exit
+EOF
+"
+sleep 10
+su - oracle -c "lsnrctl stop"
+sleep 10
+    rm -rf ${oracle_base_base}/oracle/
+    rm -rf ${oracle_base_base}/oraInventory/
+    rm -rf /usr/local/bin/dbhome
+    rm -rf /usr/local/bin/oraenv
+    rm -rf /usr/local/bin/coraenv
+    rm -rf /etc/oratabb
+    rm -rf /etc/oraInst.loc
+    rm -rf /tmp/.oracle
+    userdel -r oracle
+    groupdel dba
+    groupdel oinstall
 }
+single_usage(){
+echo '
+usage: oracInst single  <opt>
 
-close_X11{
-rm -rf /root/.xauth/
-}
-uninstall {
-rm -rf /u01/app/oracle/
-rm -rf /u01/app/oraInventory/
-rm -rf /usr/local/bin/dbhome
-rm -rf /usr/local/bin/oraenv
-rm -rf /usr/local/bin/coraenv
-rm -rf /etc/oratabb
-rm -rf /etc/oraInst.loc
-rm -rf /tmp/.oracle
-userdel -r oracle
-groupdel dba
-groupdel oinstall
+      -preOpt    预处理，建用户，路径, 配置环境
+      -dbInstall 安装数据库
+      -netca     建立监听
+      -dbca      建库
+      -all       相当于依次执行-preOpt -dbInstall -netca -dbca  
+      -uninstall    卸载数据库环境
+'
 }
 ######################################################
 #
@@ -174,14 +219,37 @@ groupdel oinstall
 ###########################################################
 #your_ip=${1:-192.168.132.132}
 #your_host=${2:-node1}
-oracle_user_passwd="111111"
 oracle_db_soft_response_file="/home/oracle/db.rsp"
 netca_response_file="/home/oracle/netca.rsp"
 dbca_response_file="/home/oracle/dbca.rsp"
 
-restore_file
-backup_file
-set_env
-prepare_soft
-install_soft
+
+opt=$1
+shift
+case $1 in 
+    -preOpt)
+        restore_file
+        backup_file
+        set_env
+        ;;
+    -dbInstall)
+        db_install
+    ;;
+    -netca)
+        netca_install
+    ;;
+    -dbca)
+        dbca_install
+    ;;
+    -all)
+        prepare  && db_install && netca_install && dbca_install
+    ;;
+    -uninstall)
+        uninstall
+    ;;
+    *)
+    single_usage
+    ;;
+esac
+
 

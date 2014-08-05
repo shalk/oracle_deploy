@@ -1,0 +1,43 @@
+#!/bin/bash
+
+echo '
+NAME
+    oracInst  -  oracle installment scripts
+
+Usage: 
+    oraInst -h|-help|--help
+    oracInst <command>  <arg>
+
+Command:
+    single  : install standalone oracle database 安装单机数据库
+    rac     : install Real Cluster Application (RAC) oracle database 安装RAC集群数据库
+
+
+Options:
+    oraInst single -preOpt      预处理，建用户，路径等，也可对介质进行检查等
+    oraInst single -dbInstall   安装数据库
+    oraInst single -dbca        建库
+    oraInst single -all         相当于依次执行 -preOpt -dbInstall -dbca
+    oraInst single -uninstall   卸载数据库
+
+ 
+
+    oraInst rac  -preOpt    预处理，建用户，路径、配置ssh等，也可对介质进行检查等
+    oraInst rac  -grid      安装grid
+    oraInst rac  -asmca     建立asm管理
+    oraInst rac  -dbInstall 安装数据库
+    oraInst rac  -dbca      建库
+    oraInst rac  -all       相当于依次执行-preOpt -grid -asmca -dbInstall -dbca  
+    oraInst rac  -uninstall    卸载rac的安装
+
+COPYRIGHT
+    Copyright (C) 2014  Shalk
+    
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+    
+    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+    
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    
+
+'
