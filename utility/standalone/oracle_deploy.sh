@@ -1,10 +1,11 @@
 #!/bin/bash
+cd `dirname $0`
 
 source ../../single.cfg
-
+oracle_base_base=`dirname $oracle_oracle_base`
 prepare_soft(){
 
-cp -rf *.rsp /home/oracle
+cp -rf rsp11g0203/*.rsp /home/oracle
 chown oracle:oinstall /home/oracle/*.rsp
 
  [ -f ${software_path}/${oracle_softname1} ] || exit 1 
@@ -12,10 +13,6 @@ chown oracle:oinstall /home/oracle/*.rsp
 chmod 777 ${software_path}/${oracle_softname1} 
 chmod 777 ${software_path}/${oracle_softname2} 
 
-su - oracle  -c " unzip -o ${software_path}/${oracle_softname1}  -d /home/oracle "
-su - oracle  -c " unzip -o ${software_path}/${oracle_softname2}  -d /home/oracle "
-
-cd `dirname $0`
 echo "$oracle_soft1_md5  ${software_path}/${oracle_softname1}" | md5sum -c 
 if [[ $? != 0 ]];then
     echo " ${software_path}/${oracle_softname1} is not correct file"
@@ -26,6 +23,10 @@ if [[ $? != 0 ]];then
     echo "${software_path}/${oracle_softname2}  is not correct file"
     exit 1
 fi
+
+su - oracle  -c " unzip -o ${software_path}/${oracle_softname1}  -d /home/oracle  >/dev/null"
+su - oracle  -c " unzip -o ${software_path}/${oracle_softname2}  -d /home/oracle  >/dev/null"
+
 
 chown  -R oracle:oinstall /home/oracle/database/ 
 chmod 777 -R /home/oracle/database/
@@ -54,25 +55,35 @@ rm -rf /root/.xauth/
 
 set_env(){
 rpm -q syssat || rpm -ivh sysstat-8.1.5-7.32.1.x86_64.rpm
-#export HOSTNAME=$your_host
-#hostname $your_host
-##perl -p -i -e "s/HOSTNAME.*/HOSTNAME=$your_host/" /etc/sysconfig/network
-#echo "$your_host" >> /etc/HOSTNAME
-#echo "$your_ip  $your_host" >>/etc/hosts
+rpm -e orarun
+rpm -ivh ../rpm/libcap1-1.10-6.10.x86_64.rpm
+
+#hostname
+export HOSTNAME=$single_hostname
+hostname $single_hostname
+ [ -f  /etc/sysconfig/network ] && perl -p -i -e "s/HOSTNAME.*/HOSTNAME=${single_hostname}/" /etc/sysconfig/network
+ [ -f  /etc/HOSTNAME ] &&  echo "$single_hostname" > /etc/HOSTNAME
+cat  > /etc/hosts <<EOF
+127.0.0.1       localhost
+::1             localhost ipv6-localhost ipv6-loopback
+$single_ip    $single_hostname
+EOF
 
 
 #sysctl
-cat /etc/sysctl.conf  | grep '^#' -v | grep '^\s*$' -v > /etc/sysctl.conf.bak
-cp /etc/sysctl.conf.bak  /etc/sysctl.conf
+shmmax=`cat /proc/meminfo  | grep MemTotal | awk '{print $2*512}' `
+sed -i '/kernel.shmmax/d' /etc/sysctl.conf
 cat >>/etc/sysctl.conf <<EOF
-kernel.shmmni = 4096
-kernel.sem = 5010 641280 5010 128
-fs.file-max = 671088640
-net.ipv4.ip_local_port_range = 9000 65500
-net.core.rmem_default = 1048576
-net.core.rmem_max = 4194304
-net.core.wmem_default = 1048576
-net.core.wmem_max = 1048576
+kernel.shmmax = $shmmax
+fs.aio-max-nr = 1048576 
+fs.file-max = 6815744 
+kernel.shmmni = 4096 
+kernel.sem = 250 32000 100 128 
+net.ipv4.ip_local_port_range = 9000 65500 
+net.core.rmem_default = 262144 
+net.core.rmem_max = 4194304 
+net.core.wmem_default = 262144 
+net.core.wmem_max = 1048586
 EOF
 sysctl -p
 
@@ -95,7 +106,6 @@ oracle  hard    nofile  65536
 EOF
 
 # set install path
-oracle_base_base=`dirname $oracle_oracle_base`
 mkdir -p $oracle_oracle_base
 chown -R oracle:oinstall $oracle_oracle_base
 chmod -R 775 $oracle_oracle_base
@@ -112,6 +122,7 @@ EOF
 chown  oracle:oinstall /home/oracle/.bash_profile
 chmod  644 /home/oracle/.bash_profile
 
+open_X11
 }
 
 db_install(){
@@ -164,7 +175,7 @@ fi
 #打开切换用户的GUI
 mkdir  /root/.xauth/
 echo oracle >  /root/.xauth/export
-sleep 10
+sleep 5
 # 建库
 su - oracle -c "  dbca -silent -responseFile $dbca_response_file "
 sleep 10
@@ -226,11 +237,12 @@ dbca_response_file="/home/oracle/dbca.rsp"
 
 opt=$1
 shift
-case $1 in 
+case $opt in 
     -preOpt)
         restore_file
         backup_file
         set_env
+        prepare_soft
         ;;
     -dbInstall)
         db_install
@@ -242,7 +254,7 @@ case $1 in
         dbca_install
     ;;
     -all)
-        prepare  && db_install && netca_install && dbca_install
+        bash $0 -preOpt  && db_install && netca_install && dbca_install
     ;;
     -uninstall)
         uninstall
@@ -251,5 +263,3 @@ case $1 in
     single_usage
     ;;
 esac
-
-
