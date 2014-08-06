@@ -45,7 +45,7 @@ restore_file(){
 }
 
 open_X11(){
-mkdir  /root/.xauth/
+mkdir -p  /root/.xauth/ 2>/dev/null
 echo oracle >  /root/.xauth/export
 }
 
@@ -54,7 +54,7 @@ rm -rf /root/.xauth/
 }
 
 set_env(){
-rpm -q syssat || rpm -ivh sysstat-8.1.5-7.32.1.x86_64.rpm
+rpm -q syssat 2>/dev/null || rpm -ivh ../rpm/sysstat-8.1.5-7.32.1.x86_64.rpm
 rpm -e orarun
 rpm -ivh ../rpm/libcap1-1.10-6.10.x86_64.rpm
 
@@ -173,8 +173,7 @@ fi
 
 
 #打开切换用户的GUI
-mkdir  /root/.xauth/
-echo oracle >  /root/.xauth/export
+open_X11
 sleep 5
 # 建库
 su - oracle -c "  dbca -silent -responseFile $dbca_response_file "
@@ -189,8 +188,7 @@ EOF
 }
 
 uninstall(){
-su - oracle -c " sqlplus / nolog <<EOF
-connect / as sysdba;
+su - oracle -c " sqlplus / as sysdba <<EOF
 shutdown immediate;
 exit
 EOF
@@ -203,7 +201,7 @@ sleep 10
     rm -rf /usr/local/bin/dbhome
     rm -rf /usr/local/bin/oraenv
     rm -rf /usr/local/bin/coraenv
-    rm -rf /etc/oratabb
+    rm -rf /etc/oratab
     rm -rf /etc/oraInst.loc
     rm -rf /tmp/.oracle
     userdel -r oracle
