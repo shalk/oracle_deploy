@@ -5,7 +5,7 @@ if  [ ! -f ../../rac.cfg ] ;then
     exit 1
 fi	
 source ../../rac.cfg
-
+source logging.sh
 backup_file(){
  [ -f  /etc/udev/rules.d/99-oracle-raw.rules.bak ] || cp -rf /etc/udev/rules.d/99-oracle-raw.rules{,.bak} || touch /etc/udev/rules.d/99-oracle-raw.rules.bak
  [ -f /etc/raw.bak ] || cp -rf /etc/raw{,.bak} || touch /etc/raw.bak
@@ -21,7 +21,7 @@ iscsiadm -m  node  -T $storage_flag  -p $storage_ip  -l
 }
 
 setup_storage(){
-
+ora_log "[setup_storage] raw device relationship take effect"
 sleep 10
 cat > /etc/raw  <<EOF
 raw1:$raw1
@@ -61,30 +61,31 @@ storage_flag=`iscsiadm -m discovery -t sendtargets -p $storage_ip | awk '{ print
 iscsiadm -m  node  -p $storage_ip  -T $storage_flag  -u
 }
 show_disk(){
+ora_log "[show_disk] raw list"
 diskArray="$raw1 $raw2 $raw3 $raw4 $raw5"
-echo =========================================  
+echo "========================================="  
 for disk in $diskArray
 do
     ls -l $disk
 done
 echo =========================================  
-ls -l  /dev/raw
-echo =========================================  
+ls -l  /dev/raw 
+echo "========================================="
 }
 
 storage_ip=${2:-10.5.101.16}
 
 case $1 in
   install) 
-        restore_file
+        restore_file >/dev/null 2>&1
         backup_file
         setup_storage
-	    show_disk
+#        show_disk
         ;;
   uninstall)
         uninstall
         restore_file
-	    show_disk
+        show_disk
         ;;
    *)
         echo "usage:$0 [install  | uninstall] "

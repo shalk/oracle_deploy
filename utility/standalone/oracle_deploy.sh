@@ -3,6 +3,11 @@ cd `dirname $0`
 
 source ../../single.cfg
 oracle_base_base=`dirname $oracle_oracle_base`
+
+ora_log(){
+
+printf  "%b" "[INFO] $*\n"
+}
 prepare_soft(){
 
 cp -rf rsp11g0203/*.rsp /home/oracle
@@ -10,6 +15,7 @@ chown oracle:oinstall /home/oracle/*.rsp
 
  [ -f ${software_path}/${oracle_softname1} ] || exit 1 
  [ -f ${software_path}/${oracle_softname2} ] || exit 1 
+
 chmod 777 ${software_path}/${oracle_softname1} 
 chmod 777 ${software_path}/${oracle_softname2} 
 
@@ -136,7 +142,7 @@ su - oracle -c "/home/oracle/database/runInstaller -silent  -ignorePrereq -respo
 #检测安装完成
 while true
 do
-    if grep "Unloading Setup Driver" ${oracle_base_base}/oraInventory/logs/install*  2>&1 >/dev/null
+    if grep "Unloading Setup Driver" ${oracle_base_base}/oraInventory/logs/install*  >/dev/null 2>&1
     then
         break
     fi
@@ -212,12 +218,12 @@ single_usage(){
 echo '
 usage: oracInst single  <opt>
 
-      -preOpt    预处理，建用户，路径, 配置环境
-      -dbInstall 安装数据库
-      -netca     建立监听
-      -dbca      建库
-      -all       相当于依次执行-preOpt -dbInstall -netca -dbca  
-      -uninstall    卸载数据库环境
+      -preOpt       prepare enviroment: unzip software,set env value, create user ,create directory and so on.
+      -dbInstall    install database software only.
+      -netca        setup listener
+      -dbca         create database instance
+      -all          install oracle all in one opt. the same as -preOpt, -dbInstall, -netca, -dbca,   one by one.
+      -uninstall    uninstall oracle database 
 '
 }
 ######################################################

@@ -9,7 +9,7 @@ fi
 
 
 source ../../rac.cfg
-
+source logging.sh
 oracle_passwd='111111'
 #sysconfig
 
@@ -30,11 +30,22 @@ restore_file(){
     [  -f /etc/profile.bak ] && cp -rf /etc/profile{.bak,}
     [  -f /lib/udev/rules.d/50-udev-default.rules.bak ] && cp -rf /lib/udev/rules.d/50-udev-default.rules{.bak,}
 }
-
-set_env(){
-
+set_rpm(){
 rpm -ivh ../rpm/libcap1-1.10-6.10.x86_64.rpm
 rpm -e orarun-1.9-172.20.21.54
+
+}
+disable_ntp(){
+/etc/init.d/ntpd stop
+/etc/init.d/ntp stop 
+chkconfig ntpd off  
+chkconfig ntp off  
+mv /etc/ntp.conf /etc/ntp.org
+}
+set_env(){
+ora_log "check rpm"
+set_rpm >/dev/null 2>&1
+ora_log "check rpm finish"
 
 cat >> /etc/profile <<EOF
 if [ \$USER = "oracle" ] || [ \$USER = "grid" ]; then
@@ -63,7 +74,7 @@ EOF
 #cat >>/etc/pam.d/login <<EOF
 #session required pam_limits.so
 #EOF
-
+ora_log "setup sysctl paremeter"
 shmmax=`cat /proc/meminfo  | grep MemTotal | awk '{print $2*512}' `
 sed -i '/kernel.shmmax/d' /etc/sysctl.conf
 cat >>/etc/sysctl.conf <<EOF
@@ -78,11 +89,12 @@ net.core.rmem_max = 4194304
 net.core.wmem_default = 262144 
 net.core.wmem_max = 1048586
 EOF
-
+sysctl -p >/dev/null 2>&1 
+ora_log "setup sysctl paremeter finish"
 #stop ntp
-/etc/init.d/ntpd stop 
-chkconfig ntpd off 
-mv /etc/ntp.conf /etc/ntp.org
+ora_log "disable ntp"
+disable_ntp >/dev/null 2>&1
+ora_log "disable ntp finish"
 #config host
 
 cat  > /etc/hosts <<EOF
@@ -105,14 +117,15 @@ hostname $your_host
  [ -f /etc/sysconfig/network ] &&  perl -p -i -e "s/HOSTNAME.*/HOSTNAME=$your_host/" /etc/sysconfig/network
  [ -f /etc/HOSTNAME ] && echo $your_host > /etc/HOSTNAME
 #del group adn user
-userdel -r oracle
-userdel -r grid
-groupdel oinstall
-groupdel dba
-groupdel oper
-groupdel asmadmin
-groupdel asmoper
-groupdel asmdba
+ora_log "setup oracle user and group" 
+userdel -r oracle  >/dev/null 2>&1 
+userdel -r grid    >/dev/null 2>&1
+groupdel oinstall  >/dev/null 2>&1
+groupdel dba       >/dev/null 2>&1
+groupdel oper      >/dev/null 2>&1
+groupdel asmadmin  >/dev/null 2>&1
+groupdel asmoper   >/dev/null 2>&1
+groupdel asmdba    >/dev/null 2>&1
 #add group and user
 /usr/sbin/groupadd -g 502 oinstall 
 /usr/sbin/groupadd -g 503 dba 
@@ -125,7 +138,9 @@ groupdel asmdba
 echo $oracle_passwd | passwd oracle --stdin
 echo $oracle_passwd | passwd grid --stdin
 
+ora_log "setup oracle user and group finish" 
 #create dir
+ora_log "setup oracle directory" 
 mkdir -p /home/oracle 
 mkdir -p /home/grid 
 chown -R oracle:oinstall /home/oracle 
@@ -142,6 +157,17 @@ chown -R grid:oinstall /oracle/app/grid
 chown -R oracle:oinstall /oracle/app/oracle 
 chmod -R 775 /oracle/app/oracle 
 chmod -R 775 /oracle/app/grid
+ora_log "setup oracle directory finish" 
+}
+fix_permisson(){
+chmod 666 /dev/fuse
+chmod 666 /dev/null
+chmod 666 /dev/zero
+chmod 666 /dev/ptmx
+chmod 666 /dev/tty
+chmod 666 /dev/full
+chmod 666 /dev/urandom
+chmod 666 /dev/random
 }
 uninstall(){
 rm -rf /oracle/app/
@@ -162,6 +188,7 @@ groupdel asmoper
 groupdel asmdba
 }
 user_env(){
+ora_log "make bash_profile for user grid, oracle "
 cat > /home/grid/.bash_profile <<EOF
 ORACLE_SID=+ASM${node_num}; export ORACLE_SID 
 ORACLE_BASE=${grid_oracle_base}; export ORACLE_BASE 
@@ -191,10 +218,11 @@ case $1 in
             echo "usage:$0  install nodenum "
             exit 1
         fi
-        restore_file
-        backup_file
+        restore_file 
+        backup_file 
         set_env
         user_env
+        fix_permisson
         ;;
   uninstall)
         restore_file

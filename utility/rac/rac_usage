@@ -1,14 +1,19 @@
 #!/bin/bash
 cd `dirname $0`
-echo '
+echo "
 usage: oracInst rac  <opt>
 
-      -preOpt    预处理，建用户，路径、配置ssh等，也可对介质进行检查等
-      -grid      安装grid
-      -asmca     建立asm管理
-      -dbInstall 安装数据库
-      -dbca      建库
-      -all       相当于依次执行-preOpt -grid -asmca -dbInstall -dbca  
-      -uninstall    卸载rac的安装
+      -preOpt       enviroment prepare : setup user for oracle ,build ssh equivalent,create directory for oralce and so on .
+      -grid         install grid software
+      -asmca        create asm diskgroup for oracle data 
+      -dbInstall    install database software only
+      -dbca         create oracle database instance. 
+      -all          install oracle all in one parameter . 
+                      
 
-'
+      -un_dbca      uninstall oracle database instance.
+      -un_db        uninstall oracle database software
+      -un_asmca     drop oracle data diskgroup
+      -un_grid      uninstall grid software
+      -uninstall    uninstall a complete rac.It will uninstall dbca,db,asmca grid one by one.
+"

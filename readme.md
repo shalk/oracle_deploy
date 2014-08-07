@@ -5,11 +5,15 @@ This project can install Oracle 11gR2 in silent mode.
 It contains two Parts : Rac(Real Application Cluster) and StandAlone .
 
 
-##
+##SYSNOPSIS##
+        
+
+
+
+
 
 ##StandAlone(单机)##
 
-I implement this part in a shell script  less than 200 lines.
 
 Usage：
         

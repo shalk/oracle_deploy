@@ -4,48 +4,37 @@ cd `dirname $0`
 
 # setup parameter
 source ../../rac.cfg
+source logging.sh
 grid_base_base=`dirname $grid_oracle_base `
-sh check.sh
+
+
+#chekc md5
+#sh check.sh
 if [ $? != 0 ] ; then
     echo "check failed"
     exit 1
 fi
 
 
-#fix permissive
-
-chmod 666 /dev/fuse
-chmod 666 /dev/null
-chmod 666 /dev/zero
-chmod 666 /dev/ptmx
-chmod 666 /dev/tty
-chmod 666 /dev/full
-chmod 666 /dev/urandom
-chmod 666 /dev/random
-
-# make sure connect
-su - grid -c 'ssh -o StrictHostKeyChecking=no rac1 date'
-su - grid -c 'ssh -o StrictHostKeyChecking=no rac2 date'
-su - oracle -c 'ssh -o StrictHostKeyChecking=no rac2 date'
-su - oracle -c 'ssh -o StrictHostKeyChecking=no rac1 date'
-ssh -o StrictHostKeyChecking=no rac1 date
-ssh -o StrictHostKeyChecking=no rac2 date
-ssh rac2 "
-su - grid -c 'ssh -o StrictHostKeyChecking=no rac1 date'
-su - grid -c 'ssh -o StrictHostKeyChecking=no rac2 date'
-su - oracle -c 'ssh -o StrictHostKeyChecking=no rac2 date'
-su - oracle -c 'ssh -o StrictHostKeyChecking=no rac1 date'
-ssh -o StrictHostKeyChecking=no rac1 date
-ssh -o StrictHostKeyChecking=no rac2 date
-"
-
 # prepare software
  [ -f ${software_path}/${grid_softname} ] || exit 1 
 chmod 777 /database/$grid_softname
-su - grid  -c " [ -d /home/grid/grid ] ||  unzip ${software_path}/${grid_softname} -d /home/grid "
+ora_log "unzip grid software waiting..."
+grid_unzip_log_name=`mktemp --tmpdir=/tmp --suffix=.log grid_unzip.XXXXX`
+chmod 777 $grid_unzip_log_name
+ora_log "detail in log : $grid_unzip_log_name "
+su - grid  -c " [ -d /home/grid/grid ] ||  unzip ${software_path}/${grid_softname} -d /home/grid >$grid_unzip_log_name"
+if  [ ! -d /home/grid/grid/ ]
+then 
+    echo "unzip failed"
+    exit 1
+fi
 
+ora_log "unzip grid software finish"
 
 # prepare rsp file
+prepare_grid_file(){
+ora_log "prepare grid file"
 touch  $grid_rsp_file
 > $grid_rsp_file
 
@@ -98,34 +87,54 @@ PROXY_PWD=
 PROXY_REALM=
 EOF
 chmod 777 $grid_rsp_file
-
-
+}
 # setup x11
-
-mkdir ~/.xauth/
+open_X11_for_grid(){
+mkdir -p ~/.xauth/
 echo grid > ~/.xauth/export
-
-GRID_LOG='grid.log'
+}
 # execute silent mode 
-su - grid -c "cd grid; rm $GRID_LOG; ./runInstaller -ignorePrereq -silent -responseFile ${grid_rsp_file} | tee $GRID_LOG "
+exec_grid(){
+ora_log "execute grid silent installment"
+rm -rf ${grid_base_base}/oraInventory/logs/*
+su - grid -c "cd grid;  ./runInstaller -ignorePrereq -silent -responseFile ${grid_rsp_file}  "
+}
 
-# pause
-echo  "###########################"
-echo  -n "Continue (y/n)[y]:"
-read  tmp_continue
-case $tmp_continue in
-n|N)
-    echo "Let's stop here"
-    exit 1
-    ;;
-*)
-    echo "Let's continue"
-esac
-# 
-ssh rac1 "${grid_base_base}/oraInventory/orainstRoot.sh"
-ssh rac2 "${grid_base_base}/oraInventory/orainstRoot.sh"
-ssh rac1 "${grid_oracle_home}/root.sh"
-ssh rac2 "${grid_oracle_home}/root.sh"
 
-su - grid -c "${grid_oracle_home}/cfgtoollogs/configToolAllCommands"
-#
+#check grid success
+check_grid_finish(){
+    ora_log "waiting grid silent installment in background"
+    sleep 20
+    while true
+    do
+        if grep "Unloading Setup Driver" ${grid_base_base}/oraInventory/logs/installActions*  >/dev/null 2>&1
+        then
+            break
+        fi
+        for errfile in `ls  ${grid_base_base}/oraInventory/logs/*.err `
+        do
+            if [ -s $errfile  ]   
+            then 
+                echo "[ERROR] error in log " ${grid_base_base}/oraInventory/logs/*.err 
+                return 1
+            fi
+        done
+        sleep 20
+    done
+    ora_log "grid silent complete"
+    return 0
+}
+grid_after_install(){
+    ora_log "execute orainstRoot.sh and root.sh for everynode"
+    ssh rac1 "${grid_base_base}/oraInventory/orainstRoot.sh"
+    ssh rac2 "${grid_base_base}/oraInventory/orainstRoot.sh"
+    ssh rac1 "${grid_oracle_home}/root.sh"
+    ssh rac2 "${grid_oracle_home}/root.sh"    
+    ora_log "execute configToolAllCommands"
+    su - grid -c "${grid_oracle_home}/cfgtoollogs/configToolAllCommands"
+}
+
+prepare_grid_file
+open_X11_for_grid
+exec_grid
+check_grid_finish && grid_after_install

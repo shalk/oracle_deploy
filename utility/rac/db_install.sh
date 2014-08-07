@@ -1,14 +1,14 @@
-
+#!/bin/bash
 cd `dirname $0`
 
 
 # setup parameter
 source ../../rac.cfg
 oracle_base_base=`dirname  $oracle_oracle_base `
+source logging.sh
 
 
-
-#creake ORACLE_HOME dir
+#create ORACLE_HOME dir
 ssh rac2 " su - oracle -c ' mkdir \$ORACLE_HOME -p ' "
 ssh rac1 " su - oracle -c ' mkdir \$ORACLE_HOME -p ' "
 #prepare software
@@ -18,13 +18,16 @@ ssh rac1 " su - oracle -c ' mkdir \$ORACLE_HOME -p ' "
 chmod 777 ${software_path}/${oracle_softname1} 
 chmod 777 ${software_path}/${oracle_softname2} 
 
-su - oracle  -c " unzip -o ${software_path}/${oracle_softname1}  -d /home/oracle "
-su - oracle  -c " unzip -o ${software_path}/${oracle_softname2}  -d /home/oracle "
-
+unzip_oracle_software(){
+ora_log "unzip oracle database software "
+su - oracle  -c " unzip -o ${software_path}/${oracle_softname1}  -d /home/oracle >/dev/null"
+su - oracle  -c " unzip -o ${software_path}/${oracle_softname2}  -d /home/oracle >/dev/null"
+ora_log "unzip oracle database software finish"
+}
 # prepare rsp file
+prepare_oracle_rsp_file(){
 touch $oracle_rsp_file
 > $oracle_rsp_file
-
 cat >> $oracle_rsp_file <<EOF 
 oracle.install.responseFileVersion=/oracle/install/rspfmt_dbinstall_response_schema_v11_2_0
 oracle.install.option=INSTALL_DB_SWONLY
@@ -80,21 +83,48 @@ oracle.installer.autoupdates.downloadUpdatesLoc=
 AUTOUPDATES_MYORACLESUPPORT_USERNAME=
 AUTOUPDATES_MYORACLESUPPORT_PASSWORD=
 EOF
+}
 
+db_silent_install(){
+ora_log "execute db silent installment"
+rm -rf ${oracle_base_base}/oraInventory/logs/installActions*  2>/dev/null
 su - oracle -c "cd database; ./runInstaller -ignorePrereq -silent -responseFile ${oracle_rsp_file}"
+
+}
+
 # pause
-echo  "###########################"
-echo  -n "Continue (y/n)[y]:"
-read  tmp_continue
-case $tmp_continue in
-n|N)
-    echo "Let's stop here"
-    exit 1
-    ;;
-*)
-    echo "Let's continue"
-esac
-
-
+check_db_finish(){
+    ora_log "waiting db silent installment in background"
+    sleep 20
+    while true
+    do
+        if grep "Unloading Setup Driver" ${oracle_base_base}/oraInventory/logs/installActions*   >/dev/null 2>&1
+        then
+            break
+        fi
+        for errfile in `ls  ${oracle_base_base}/oraInventory/logs/*.err `
+        do
+            if [ -s $errfile  ]   
+            then 
+                echo "[ERROR] error in log " ${oracle_base_base}/oraInventory/logs/*.err 
+                return 1
+            fi
+        done
+        sleep 20
+    done
+    ora_log "db installment finish"
+    return 0
+}
+after_db_silent_install(){
 ssh rac1 "$oracle_oracle_home/root.sh"
 ssh rac2 "$oracle_oracle_home/root.sh"
+}
+
+unzip_oracle_software
+prepare_oracle_rsp_file
+db_silent_install
+if check_db_finish
+then 
+     after_db_silent_install
+fi
+

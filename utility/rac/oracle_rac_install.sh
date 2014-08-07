@@ -8,17 +8,26 @@ prepare(){
 grid_install(){
     sh grid_install.sh
 }
+grid_uninstall(){
+    sh grid_uninstall.sh
+}
 asmca_install(){
     sh asmca_install.sh
 }
+asmca_uninstall(){
+    sh asmca_uninstall.sh
+}
 db_install(){
-    sh db_install.sh
+    bash  db_install.sh
+}
+db_uninstall(){
+    sh db_uninstall.sh
 }
 dbca_install(){
     sh dbca_install.sh
 }
-rac_uninstall(){
-   sh dbca_uninstall.sh  &&   sh db_uninstall.sh && sh asmca_uninstall.sh && sh grid_uninstall.sh
+dbca_uninstall(){
+    sh dbca_uninstall.sh
 }
 rac_usage(){
    sh rac_usage
@@ -27,21 +36,33 @@ rac_usage(){
 
 opt=$1
 shift
-case $1 in 
+case $opt in 
     -preOpt)
         prepare
         ;;
     -grid)
         grid_install
     ;;
+    -un_grid)
+        grid_uninstall
+    ;;
     -asmca)
         asmca_install
+    ;;
+    -un_asmca)
+        asmca_uninstall
     ;;
     -dbInstall)
         db_install
     ;;
+    -un_db)
+        db_uninstall
+    ;;
     -dbca)
         dbca_install
+    ;;
+    -un_dbca)
+        dbca_uninstall
     ;;
     -all)
         prepare
@@ -51,7 +72,10 @@ case $1 in
         dbca_install
     ;;
     -uninstall)
-        rac_uninstall
+        dbca_uninstall
+        db_uninstall
+        asmca_uninstall
+        grid_uninstall
     ;;
     *)
     rac_usage
