@@ -13,8 +13,11 @@ ora_log "setup no password for root finish"
 
 #scp to every node
 ora_log "scp orace_deploy to every node"
-scp -q -r ../../../oracle_deploy 10.5.101.20:/root/
-scp -q -r ../../../oracle_deploy 10.5.101.21:/root/
+current_oraInst_dirname=$(dirname  $( dirname $tmppwd  ) )
+rm -rf /tmp/oracle_deploy
+cp -rf $current_oraInst_dirname  /tmp/oracle_deploy
+scp -q -r /tmp/oracle_deploy 10.5.101.20:/root/
+scp -q -r /tmp/oracle_deploy 10.5.101.21:/root/
 ora_log "scp orace_deploy to every node finish"
 echo
 ora_log "=========rac2 prepare start=========="

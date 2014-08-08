@@ -8,6 +8,7 @@ ora_log(){
 
 printf  "%b" "[INFO] $*\n"
 }
+
 prepare_soft(){
 
 cp -rf rsp11g0203/*.rsp /home/oracle
@@ -38,7 +39,6 @@ chown  -R oracle:oinstall /home/oracle/database/
 chmod 777 -R /home/oracle/database/
 }
 
-# 检查是否备份
 backup_file(){
   [ -f /etc/hosts.bak ] || cp  -rf /etc/hosts{,.bak}
   [ -f /etc/sysctl.conf.bak ] || cp  -rf /etc/sysctl.conf{,.bak}
@@ -58,13 +58,20 @@ echo oracle >  /root/.xauth/export
 close_X11(){
 rm -rf /root/.xauth/
 }
-
+turn_off_firewall(){
+    [ -f /etc/init.d/SuSEfirewall2_setup ] && rcSuSEfirewall2 stop
+    chkconfig SuSEfirewall2_setup off  >/dev/null 2>&1    
+    [ -f /etc/init.d/iptables ] && service iptables stop
+    chkconfig iptables off >/dev/null 2>&1 
+}
 set_env(){
+ora_log "check rpm"
 rpm -q syssat 2>/dev/null || rpm -ivh ../rpm/sysstat-8.1.5-7.32.1.x86_64.rpm
-rpm -e orarun
-rpm -ivh ../rpm/libcap1-1.10-6.10.x86_64.rpm
-
+rpm -e orarun >/dev/null 2>&1
+rpm -ivh ../rpm/libcap1-1.10-6.10.x86_64.rpm 2>&1
+ora_log "check rpm finish"
 #hostname
+ora_log "set hostname "
 export HOSTNAME=$single_hostname
 hostname $single_hostname
  [ -f  /etc/sysconfig/network ] && perl -p -i -e "s/HOSTNAME.*/HOSTNAME=${single_hostname}/" /etc/sysconfig/network
@@ -74,9 +81,14 @@ cat  > /etc/hosts <<EOF
 ::1             localhost ipv6-localhost ipv6-loopback
 $single_ip    $single_hostname
 EOF
-
+ora_log "set hostname finish"
+#turn off firewall
+ora_log "turn off firewall"
+turn_off_firewall
+ora_log "turn off firewall finish"
 
 #sysctl
+ora_log "config sysctl"
 shmmax=`cat /proc/meminfo  | grep MemTotal | awk '{print $2*512}' `
 sed -i '/kernel.shmmax/d' /etc/sysctl.conf
 cat >>/etc/sysctl.conf <<EOF
@@ -91,19 +103,22 @@ net.core.rmem_max = 4194304
 net.core.wmem_default = 262144 
 net.core.wmem_max = 1048586
 EOF
-sysctl -p
+sysctl -p >/dev/null 2>&1 
 
+ora_log "config sysctl finish"
 
 #create oracle user and group
-userdel -r oracle
-groupdel dba
-groupdel oinstall
-
-groupadd oinstall
-groupadd dba
-useradd -m -g oinstall -G dba oracle
+ora_log "create user for oracle"
+userdel -r oracle >/dev/null 2>&1
+groupdel dba >/dev/null 2>&1
+groupdel oinstall >/dev/null 2>&1
+groupadd oinstall >/dev/null 2>&1
+groupadd dba >/dev/null 2>&1
+useradd -m -g oinstall -G dba oracle >/dev/null 2>&1
 echo $oracle_user_passwd | passwd oracle --stdin
+ora_log "create user for oracle finish"
 
+ora_log "set limits"
 cat  >> /etc/security/limits.conf <<EOF
 oracle  soft    nproc   65536
 oracle  hard    nproc   65536
@@ -111,6 +126,7 @@ oracle  soft    nofile  65536
 oracle  hard    nofile  65536
 EOF
 
+ora_log "create diretory for oracle"
 # set install path
 mkdir -p $oracle_oracle_base
 chown -R oracle:oinstall $oracle_oracle_base
@@ -118,6 +134,7 @@ chmod -R 775 $oracle_oracle_base
 mkdir -p ${oracle_base_base}/oraInventory
 chown oracle:oinstall ${oracle_base_base}/oraInventory
 
+ora_log "setup oracle user env value"
 cat >> /home/oracle/.bash_profile  <<EOF
 export ORACLE_BASE=${oracle_oracle_base}
 export ORACLE_HOME=${oracle_oracle_home}
@@ -132,6 +149,8 @@ open_X11
 }
 
 db_install(){
+
+ora_log "db silent installment start"
 if [ ! -f $oracle_db_soft_response_file ] 
 then 
    echo $oracle_db_soft_response_file is not exsit!
@@ -139,7 +158,9 @@ then
 fi
 rm ${oracle_base_base}/oraInventory/logs/install*  -rf
 su - oracle -c "/home/oracle/database/runInstaller -silent  -ignorePrereq -responseFile $oracle_db_soft_response_file"
-#检测安装完成
+#
+sleep 30
+ora_log "db silent installment in the backgroud waiting..."
 while true
 do
     if grep "Unloading Setup Driver" ${oracle_base_base}/oraInventory/logs/install*  >/dev/null 2>&1
@@ -149,7 +170,8 @@ do
     sleep 20
 done
 
-# 执行root脚本
+ora_log "execute scripts after db installment"
+#  
 chmod a+x ${oracle_base_base}/oraInventory/orainstRoot.sh
 ${oracle_base_base}/oraInventory/orainstRoot.sh
 chmod a+x ${oracle_base_base}/oracle/product/11.2.0/db_1/root.sh
@@ -165,9 +187,11 @@ then
    exit 1
 fi
 open_X11
-# 建立监听
+# setup netca 
+ora_log "netca installment start"
 su - oracle -c "netca -silent -responsefile $netca_response_file "
 sleep 10
+ora_log "netca installment finish"
 
 }
 dbca_install(){
@@ -178,19 +202,22 @@ then
 fi
 
 
-#打开切换用户的GUI
 open_X11
 sleep 5
-# 建库
+# create database 
+ora_log "dbca installment start"
 su - oracle -c "  dbca -silent -responseFile $dbca_response_file "
+ora_log "dbca installment finish"
 sleep 10
-# 验证
+ora_log "check oracle database"
+# check database instance
 su - oracle -c "sqlplus / as sysdba <<EOF
 select instance_name,status from v\\\$instance;
 select * from v\\\$version;
 exit
 EOF
 "
+ora_log "Oracle Single Installment All Finish"
 }
 
 uninstall(){
@@ -232,8 +259,6 @@ usage: oracInst single  <opt>
 #                    MAIN
 #
 ###########################################################
-#your_ip=${1:-192.168.132.132}
-#your_host=${2:-node1}
 oracle_db_soft_response_file="/home/oracle/db.rsp"
 netca_response_file="/home/oracle/netca.rsp"
 dbca_response_file="/home/oracle/dbca.rsp"

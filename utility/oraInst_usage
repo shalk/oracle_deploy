@@ -6,29 +6,30 @@ NAME
 
 Usage: 
     oraInst -h|-help|--help
-    oracInst <command>  <arg>
+    oracInst <Command>  <Option>
 
 Command:
-    single  : install standalone oracle database 安装单机数据库
-    rac     : install Real Cluster Application (RAC) oracle database 安装RAC集群数据库
+    single  : install standalone oracle database 
+    rac     : install Real Cluster Application (RAC) oracle database
 
+Option:
 
-Options:
-    oraInst single -preOpt      预处理，建用户，路径等，也可对介质进行检查等
-    oraInst single -dbInstall   安装数据库
-    oraInst single -dbca        建库
-    oraInst single -all         相当于依次执行 -preOpt -dbInstall -dbca
-    oraInst single -uninstall   卸载数据库
-
- 
-
-    oraInst rac  -preOpt    预处理，建用户，路径、配置ssh等，也可对介质进行检查等
-    oraInst rac  -grid      安装grid
-    oraInst rac  -asmca     建立asm管理
-    oraInst rac  -dbInstall 安装数据库
-    oraInst rac  -dbca      建库
-    oraInst rac  -all       相当于依次执行-preOpt -grid -asmca -dbInstall -dbca  
-    oraInst rac  -uninstall    卸载rac的安装
+    oraInst single   -preOpt      prepare enviroment: unzip software,set env value, create user ,create directory and so on.
+    oraInst single   -dbInstall   install database software only.
+    oraInst single   -netca       setup listener
+    oraInst single   -dbca        create database instance
+    oraInst single   -all         install oracle all in one opt. the same as -preOpt, -dbInstall, -netca, -dbca,   one by one.
+    oraInst single   -uninstall   uninstall oracle database 
+    oraInst single   -h           help for  <oraInst single>   Command
+    
+    oraInst rac   -preOpt         enviroment prepare : setup user for oracle ,build ssh equivalent,create directory for oralce and so on .
+    oraInst rac   -grid           install grid software
+    oraInst rac   -asmca          create asm diskgroup for oracle data 
+    oraInst rac   -dbInstall      install database software only
+    oraInst rac   -dbca           create oracle database instance. 
+    oraInst rac   -all            install oracle all in one parameter . 
+    oraInst rac   -uninstall      uninstall a complete oracle rac, uninstall dbca,db,asmca,grid one by one .
+    oraInst rac   -h              help for <oraInst rac> Command 
 
 COPYRIGHT
     Copyright (C) 2014  Shalk

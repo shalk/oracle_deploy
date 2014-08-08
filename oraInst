@@ -1,5 +1,12 @@
 #!/bin/bash
 cd `dirname $0`
+
+if [ "$EUID" -ne 0 ] 
+    then echo "Please run as root "
+    exit
+fi
+
+
 single_install(){
     if ! cd utility/standalone/  ; then
         echo "utility/standalone/ directory is not exist"
