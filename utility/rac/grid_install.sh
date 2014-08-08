@@ -111,7 +111,12 @@ check_grid_finish(){
         then
             break
         fi
-        for errfile in `ls  ${grid_base_base}/oraInventory/logs/*.err `
+        sleep 5
+        if grep "Exit Status is 0" ${grid_base_base}/oraInventory/logs/installActions*  >/dev/null 2>&1
+        then
+            break
+        fi
+        for errfile in `ls  ${grid_base_base}/oraInventory/logs/*.err`
         do
             if [ -s $errfile  ]   
             then 

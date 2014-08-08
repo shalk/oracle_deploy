@@ -108,7 +108,7 @@ turn_off_firewall  >/dev/null 2>&1
 ora_log "disable firewall finish"
 
 
-cat  >> /etc/hosts <<EOF
+cat  > /etc/hosts <<EOF
 127.0.0.1   localhost 
 ::1         localhost 
 $rac1_ip    rac1
