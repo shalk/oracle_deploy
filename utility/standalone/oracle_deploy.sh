@@ -10,7 +10,6 @@ printf  "%b" "[INFO] $*\n"
 }
 
 prepare_soft(){
-
 cp -rf rsp11g0203/*.rsp /home/oracle
 chown oracle:oinstall /home/oracle/*.rsp
 
@@ -19,7 +18,7 @@ chown oracle:oinstall /home/oracle/*.rsp
 
 chmod 777 ${software_path}/${oracle_softname1} 
 chmod 777 ${software_path}/${oracle_softname2} 
-
+ora_log "check md5 for software"
 echo "$oracle_soft1_md5  ${software_path}/${oracle_softname1}" | md5sum -c 
 if [[ $? != 0 ]];then
     echo " ${software_path}/${oracle_softname1} is not correct file"
@@ -30,11 +29,12 @@ if [[ $? != 0 ]];then
     echo "${software_path}/${oracle_softname2}  is not correct file"
     exit 1
 fi
-
+ora_log "check md5 for software finish"
+ora_log "unzip software to /home/oracle waiting ..."
 su - oracle  -c " unzip -o ${software_path}/${oracle_softname1}  -d /home/oracle  >/dev/null"
 su - oracle  -c " unzip -o ${software_path}/${oracle_softname2}  -d /home/oracle  >/dev/null"
-
-
+ora_log "unzip software to /home/oracle finish "
+echo
 chown  -R oracle:oinstall /home/oracle/database/ 
 chmod 777 -R /home/oracle/database/
 }
@@ -60,31 +60,33 @@ rm -rf /root/.xauth/
 }
 turn_off_firewall(){
     [ -f /etc/init.d/SuSEfirewall2_setup ] && rcSuSEfirewall2 stop
-    chkconfig SuSEfirewall2_setup off  >/dev/null 2>&1    
+    chkconfig SuSEfirewall2_setup off 
     [ -f /etc/init.d/iptables ] && service iptables stop
-    chkconfig iptables off >/dev/null 2>&1 
+    chkconfig iptables off 
 }
 set_env(){
+echo
+ora_log "=========== start set environment ==========="
 ora_log "check rpm"
-rpm -q syssat 2>/dev/null || rpm -ivh ../rpm/sysstat-8.1.5-7.32.1.x86_64.rpm
+rpm -ivh ../rpm/sysstat-8.1.5-7.32.1.x86_64.rpm >/dev/null 2>&1
 rpm -e orarun >/dev/null 2>&1
-rpm -ivh ../rpm/libcap1-1.10-6.10.x86_64.rpm 2>&1
+rpm -ivh ../rpm/libcap1-1.10-6.10.x86_64.rpm >/dev/null 2>&1
 ora_log "check rpm finish"
 #hostname
 ora_log "set hostname "
-export HOSTNAME=$single_hostname
-hostname $single_hostname
- [ -f  /etc/sysconfig/network ] && perl -p -i -e "s/HOSTNAME.*/HOSTNAME=${single_hostname}/" /etc/sysconfig/network
- [ -f  /etc/HOSTNAME ] &&  echo "$single_hostname" > /etc/HOSTNAME
+export HOSTNAME=$hostname
+hostname $hostname
+ [ -f  /etc/sysconfig/network ] && perl -p -i -e "s/HOSTNAME.*/HOSTNAME=${hostname}/" /etc/sysconfig/network
+ [ -f  /etc/HOSTNAME ] &&  echo "$hostname" > /etc/HOSTNAME
 cat  > /etc/hosts <<EOF
 127.0.0.1       localhost
 ::1             localhost ipv6-localhost ipv6-loopback
-$single_ip    $single_hostname
+$ip    $hostname
 EOF
 ora_log "set hostname finish"
 #turn off firewall
 ora_log "turn off firewall"
-turn_off_firewall
+turn_off_firewall >/dev/null 2>&1
 ora_log "turn off firewall finish"
 
 #sysctl
@@ -146,6 +148,8 @@ chown  oracle:oinstall /home/oracle/.bash_profile
 chmod  644 /home/oracle/.bash_profile
 
 open_X11
+ora_log "=========== finish set environment ==========="
+echo 
 }
 
 db_install(){
@@ -176,7 +180,8 @@ chmod a+x ${oracle_base_base}/oraInventory/orainstRoot.sh
 ${oracle_base_base}/oraInventory/orainstRoot.sh
 chmod a+x ${oracle_base_base}/oracle/product/11.2.0/db_1/root.sh
 ${oracle_base_base}/oracle/product/11.2.0/db_1/root.sh 
-
+ora_log "db silent installment finish "
+echo
 }
 
 netca_install(){
@@ -192,6 +197,7 @@ ora_log "netca installment start"
 su - oracle -c "netca -silent -responsefile $netca_response_file "
 sleep 10
 ora_log "netca installment finish"
+echo 
 
 }
 dbca_install(){

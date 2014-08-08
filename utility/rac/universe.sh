@@ -44,9 +44,9 @@ mv /etc/ntp.conf /etc/ntp.org
 }
 turn_off_firewall(){
     [ -f /etc/init.d/SuSEfirewall2_setup ] && rcSuSEfirewall2 stop
-    chkconfig SuSEfirewall2_setup off  >/dev/null 2>&1    
+    chkconfig SuSEfirewall2_setup off 
     [ -f /etc/init.d/iptables ] && service iptables stop
-    chkconfig iptables off >/dev/null 2>&1 
+    chkconfig iptables off
 }
 set_env(){
 ora_log "check rpm"
@@ -104,7 +104,7 @@ ora_log "disable ntp finish"
 #config host
 #diable firewall
 ora_log "disable firewall"
-turn_off_firewall 
+turn_off_firewall  >/dev/null 2>&1
 ora_log "disable firewall finish"
 
 
