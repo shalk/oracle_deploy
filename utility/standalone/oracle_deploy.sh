@@ -78,7 +78,7 @@ export HOSTNAME=$hostname
 hostname $hostname
  [ -f  /etc/sysconfig/network ] && perl -p -i -e "s/HOSTNAME.*/HOSTNAME=${hostname}/" /etc/sysconfig/network
  [ -f  /etc/HOSTNAME ] &&  echo "$hostname" > /etc/HOSTNAME
-cat  > /etc/hosts <<EOF
+cat  >> /etc/hosts <<EOF
 127.0.0.1       localhost
 ::1             localhost ipv6-localhost ipv6-loopback
 $ip    $hostname
