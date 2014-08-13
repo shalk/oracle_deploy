@@ -3,7 +3,7 @@
 cd `dirname $0`
 
 # setup parameter
-source ../../rac.cfg
+source rac_cfg_extend
 source logging.sh
 grid_base_base=`dirname $grid_oracle_base `
 
@@ -18,7 +18,7 @@ fi
 
 # prepare software
  [ -f ${software_path}/${grid_softname} ] || exit 1 
-chmod 777 /database/$grid_softname
+chmod 777 $software_path/$grid_softname
 ora_log "unzip grid software waiting..."
 grid_unzip_log_name=`mktemp --tmpdir=/tmp --suffix=.log grid_unzip.XXXXX`
 chmod 777 $grid_unzip_log_name

@@ -74,11 +74,20 @@ done
 # 生成一个完整的.ssh目录
 ./ecmd.sh scp -r $nodelist:$sshp  /tmp
 cp /tmp/.ssh/id_rsa.pub  /tmp/.ssh/authorized_keys
-cp ~/.ssh/known_hosts /tmp/.ssh/
+echo "StrictHostKeyChecking no" > /tmp/.ssh/config
+#cp ~/.ssh/known_hosts /tmp/.ssh/
+
 
 # 分发文件
 for node in ${nodelist[@]} ; do
   ./ecmd.sh scp /tmp/.ssh/*  $node:$sshp
 done
-
+# 每个访问生成known_hosts
+for node in ${nodelist[@]} ; do
+   ssh $node test 1
+done
+# copy known_hosts给每个节点
+for node in ${nodelist[@]} ; do
+   scp ~/.ssh/known_hosts  $node:$sshp  
+done
 rm -rf /tmp/.ssh

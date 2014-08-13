@@ -1,0 +1,56 @@
+#!/bin/bash
+cd `dirname $0`
+source ../../rac.cfg
+
+#ip list
+rac_pub_ip_list(){
+    echo  "$rac1_ip $rac2_ip $rac3_ip $rac4_ip $rac5_ip $rac6_ip $rac7_ip $rac8_ip" 
+}
+rac_priv_ip_list(){
+    echo "$rac1_priv_ip $rac2_priv_ip $rac3_priv_ip $rac4_priv_ip $rac5_priv_ip $rac6_priv_ip $rac7_priv_ip $rac8_priv_ip" 
+}
+rac_vip_list(){
+    echo "$rac1_vip $rac2_vip $rac3_vip $rac4_vip $rac5_vip $rac6_vip $rac7_vip $rac8_vip" 
+}
+
+#hostname list
+rac_pub_hostname_list(){
+    echo "$rac1_pub_hostname $rac2_pub_hostname $rac3_pub_hostname $rac4_pub_hostname $rac5_pub_hostname $rac6_pub_hostname $rac7_pub_hostname $rac8_pub_hostname"
+}
+rac_priv_hostname_list(){
+    echo "$rac1_priv_hostname $rac2_priv_hostname $rac3_priv_hostname $rac4_priv_hostname $rac5_priv_hostname $rac6_priv_hostname $rac7_priv_hostname $rac8_priv_hostname"
+}
+rac_virtual_hostname_list(){
+    echo "$rac1_virtual_hostname $rac2_virtual_hostname $rac3_virtual_hostname $rac4_virtual_hostname $rac5_virtual_hostname $rac6_virtual_hostname $rac7_virtual_hostname $rac8_virtual_hostname"
+}
+get_grid_cluster_node() {
+    grid_cluster_node_tmp="$rac1_pub_hostname:$rac1_priv_hostname,$rac2_pub_hostname:$rac2_priv_hostname,$rac3_pub_hostname:$rac3_priv_hostname,$rac4_pub_hostname:$rac4_priv_hostname,$rac5_pub_hostname:$rac5_priv_hostname,$rac6_pub_hostname:$rac6_priv_hostname,$rac7_pub_hostname:$rac7_priv_hostname,$rac8_pub_hostname:$rac8_priv_hostname"
+    echo $grid_cluster_node_tmp | sed -e 's/,://g' -e 's/,$//' -e 's/:$//'
+}
+split_list_by_comma(){
+    echo "$@" | perl -nle 'chomp; print   join  ",", split " " '
+}
+#for grid
+grid_rsp_file='/tmp/grid_clean.rsp'
+ #grid parameter for rsp
+grid_hostname="$rac1_pub_hostname"
+grid_scanname="$scanip_hostname"
+grid_cluster_node=$(get_grid_cluster_node)
+grid_network_interface="${public_eth}:${public_subnet}:1,${priv_eth}:${priv_subnet}:2"
+
+
+
+#for db
+oracle_rsp_file='/tmp/db_clean.rsp'
+ #oracle parameter for rsp
+oracle_db_hostname="$rac1_pub_hostname"
+oracle_db_clusternode=$( split_list_by_comma  $(rac_pub_hostname_list))
+
+
+#for asmca
+
+
+#for dbca
+dbca_nodelist=$( split_list_by_comma  $(rac_pub_hostname_list))
+
+cat  $(get_host_file)

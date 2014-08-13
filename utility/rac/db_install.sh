@@ -3,7 +3,7 @@ cd `dirname $0`
 
 
 # setup parameter
-source ../../rac.cfg
+source rac_cfg_extend
 oracle_base_base=`dirname  $oracle_oracle_base `
 source logging.sh
 

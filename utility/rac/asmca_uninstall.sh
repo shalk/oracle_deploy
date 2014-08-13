@@ -1,6 +1,6 @@
 #!/bin/bash
 cd `dirname $0`
-source ../../rac.cfg
+source rac_cfg_extend
 source logging.sh
 
 

@@ -1,7 +1,7 @@
 
 cd `dirname $0`
 
-source ../../rac.cfg
+source rac_cfg_extend
 source logging.sh
 
 ora_log "start dbca silent installment "

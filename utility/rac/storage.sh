@@ -1,10 +1,10 @@
 #!/bin/bash
 cd `dirname $0`
-if  [ ! -f ../../rac.cfg ] ;then
+if  [ ! -f rac_cfg_extend ] ;then
     echo "rac.cfg is not exist"
     exit 1
 fi	
-source ../../rac.cfg
+source rac_cfg_extend
 source logging.sh
 backup_file(){
  [ -f  /etc/udev/rules.d/99-oracle-raw.rules.bak ] || cp -rf /etc/udev/rules.d/99-oracle-raw.rules{,.bak} || touch /etc/udev/rules.d/99-oracle-raw.rules.bak

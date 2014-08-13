@@ -2,13 +2,13 @@
 
 
 cd `dirname $0`
-if  [ ! -f ../../rac.cfg ] ;then
+if  [ ! -f rac_cfg_extend ] ;then
     echo "rac.cfg is not exist"
     exit 1
 fi	
 
 
-source ../../rac.cfg
+source rac_cfg_extend
 source logging.sh
 oracle_passwd='111111'
 #sysconfig
@@ -111,18 +111,43 @@ ora_log "disable firewall finish"
 cat  > /etc/hosts <<EOF
 127.0.0.1   localhost 
 ::1         localhost 
-$rac1_ip    rac1
-$rac2_ip    rac2
-$rac1_priv_ip  rac1-priv
-$rac2_priv_ip  rac2-priv
-$rac1_vip   rac1-vip
-$rac2_vip   rac2-vip
-$racscan_ip racscan
+$rac1_ip  $rac1_pub_hostname  
+$rac1_priv_ip    $rac1_priv_hostname  
+$rac1_vip    $rac1_virtual_hostname  
+
+$rac2_ip  $rac2_pub_hostname 
+$rac2_priv_ip    $rac2_priv_hostname  
+$rac2_vip    $rac2_virtual_hostname  
+
+$rac3_ip  $rac3_pub_hostname 
+$rac3_priv_ip    $rac3_priv_hostname  
+$rac3_vip    $rac3_virtual_hostname  
+
+$rac4_ip  $rac4_pub_hostname 
+$rac4_priv_ip    $rac4_priv_hostname  
+$rac4_vip    $rac4_virtual_hostname  
+
+$rac5_ip  $rac5_pub_hostname 
+$rac5_priv_ip    $rac5_priv_hostname  
+$rac5_vip    $rac5_virtual_hostname  
+
+$rac6_ip  $rac6_pub_hostname 
+$rac6_priv_ip    $rac6_priv_hostname  
+$rac6_vip    $rac6_virtual_hostname  
+
+$rac7_ip  $rac7_pub_hostname 
+$rac7_priv_ip    $rac7_priv_hostname  
+$rac7_vip    $rac7_virtual_hostname  
+
+$rac8_ip  $rac8_pub_hostname 
+$rac8_priv_ip    $rac8_priv_hostname  
+$rac8_vip    $rac8_virtual_hostname  
 EOF
 
 
+
 # set hostname
-your_host=rac$node_num
+eval your_host=\$rac${node_num}_pub_hostname
 export HOSTNAME=$your_host
 hostname $your_host
  [ -f /etc/sysconfig/network ] &&  perl -p -i -e "s/HOSTNAME.*/HOSTNAME=$your_host/" /etc/sysconfig/network
