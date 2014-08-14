@@ -20,6 +20,8 @@ backup_file(){
     [  -f /etc/hosts.bak ] ||  cp -rf /etc/hosts{,.bak}
     [  -f /etc/profile.bak ] || cp -rf /etc/profile{,.bak}
     [  -f /lib/udev/rules.d/50-udev-default.rules.bak ] || cp -rf /lib/udev/rules.d/50-udev-default.rules{,.bak}
+    [  -f /etc/HOSTNAME.bak ] ||  cp -rf /etc/HOSTNAME{,.bak}
+    [  -f /etc/sysconfig/network.bak ] ||  cp -rf /etc/sysconfig/network{,.bak}
 }
 
 restore_file(){
@@ -29,6 +31,8 @@ restore_file(){
     [  -f /etc/hosts.bak ] &&  cp -rf /etc/hosts{.bak,}
     [  -f /etc/profile.bak ] && cp -rf /etc/profile{.bak,}
     [  -f /lib/udev/rules.d/50-udev-default.rules.bak ] && cp -rf /lib/udev/rules.d/50-udev-default.rules{.bak,}
+    [  -f /etc/HOSTNAME.bak ] &&  cp -rf /etc/HOSTNAME{.bak,}
+    [  -f /etc/sysconfig/network.bak ] &&  cp -rf /etc/sysconfig/network{.bak,}
 }
 set_rpm(){
 rpm -ivh ../rpm/libcap1-1.10-6.10.x86_64.rpm
@@ -142,6 +146,7 @@ $rac7_vip    $rac7_virtual_hostname
 $rac8_ip  $rac8_pub_hostname 
 $rac8_priv_ip    $rac8_priv_hostname  
 $rac8_vip    $rac8_virtual_hostname  
+$racscan_ip   $scanip_hostname
 EOF
 
 

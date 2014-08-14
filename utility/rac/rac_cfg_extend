@@ -24,7 +24,7 @@ rac_virtual_hostname_list(){
     echo "$rac1_virtual_hostname $rac2_virtual_hostname $rac3_virtual_hostname $rac4_virtual_hostname $rac5_virtual_hostname $rac6_virtual_hostname $rac7_virtual_hostname $rac8_virtual_hostname"
 }
 get_grid_cluster_node() {
-    grid_cluster_node_tmp="$rac1_pub_hostname:$rac1_priv_hostname,$rac2_pub_hostname:$rac2_priv_hostname,$rac3_pub_hostname:$rac3_priv_hostname,$rac4_pub_hostname:$rac4_priv_hostname,$rac5_pub_hostname:$rac5_priv_hostname,$rac6_pub_hostname:$rac6_priv_hostname,$rac7_pub_hostname:$rac7_priv_hostname,$rac8_pub_hostname:$rac8_priv_hostname"
+    grid_cluster_node_tmp="$rac1_pub_hostname:$rac1_virtual_hostname,$rac2_pub_hostname:$rac2_virtual_hostname,$rac3_pub_hostname:$rac3_virtual_hostname,$rac4_pub_hostname:$rac4_virtual_hostname,$rac5_pub_hostname:$rac5_virtual_hostname,$rac6_pub_hostname:$rac6_virtual_hostname,$rac7_pub_hostname:$rac7_virtual_hostname,$rac8_pub_hostname:$rac8_virtual_hostname"
     echo $grid_cluster_node_tmp | sed -e 's/,://g' -e 's/,$//' -e 's/:$//'
 }
 split_list_by_comma(){
@@ -32,6 +32,7 @@ split_list_by_comma(){
 }
 #for grid
 grid_rsp_file='/tmp/grid_clean.rsp'
+grid_pre_log='/tmp/grid_pre.log'
  #grid parameter for rsp
 grid_hostname="$rac1_pub_hostname"
 grid_scanname="$scanip_hostname"
@@ -53,4 +54,3 @@ oracle_db_clusternode=$( split_list_by_comma  $(rac_pub_hostname_list))
 #for dbca
 dbca_nodelist=$( split_list_by_comma  $(rac_pub_hostname_list))
 
-cat  $(get_host_file)

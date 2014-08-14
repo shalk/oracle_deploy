@@ -116,8 +116,10 @@ check_db_finish(){
     return 0
 }
 after_db_silent_install(){
-ssh rac1 "$oracle_oracle_home/root.sh"
-ssh rac2 "$oracle_oracle_home/root.sh"
+    for tmpnode in `rac_pub_hostname_list`
+    do
+        ssh $tmpnode "$oracle_oracle_home/root.sh"
+    done
 }
 
 unzip_oracle_software

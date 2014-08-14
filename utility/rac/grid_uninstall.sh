@@ -1,5 +1,10 @@
+#!/bin/bash
+cd `dirname $0`
+source rac_cfg_extend
+
 su - grid -c 'cd  $ORACLE_HOME/deinstall; ./deinstall'
-ssh rac1 'rm -rf /etc/oraInst.loc'
-ssh rac2 'rm -rf /etc/oraInst.loc'
-ssh rac1 'rm -rf /opt/ORCLfmap'
-ssh rac2 'rm -rf /opt/ORCLfmap'
+for tmpnode in `rac_pub_hostname_list`
+do
+    ssh $tmpnode "rm -rf /etc/oraInst.loc; rm -rf /opt/ORCLfmap"
+done
+

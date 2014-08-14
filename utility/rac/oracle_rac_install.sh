@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd `dirname $0`
-
+source logging.sh
 prepare(){
     sh prepare.sh
 }
@@ -65,11 +65,17 @@ case $opt in
         dbca_uninstall
     ;;
     -all)
-        prepare
-        grid_install
-        asmca_install
-        db_install
-        dbca_install
+        ora_log "############ STAGE 1 -preOpt ############"
+        prepare || exit 1
+        ora_log "############ STAGE 2 -grid   ############"
+        grid_install  || exit 1
+        ora_log "############ STAGE 3 -asmca  ############"
+        asmca_install || exit 1
+        ora_log "############ STAGE 4 -db     ############"
+        db_install  || exit 1
+        ora_log "############ STAGE 5 -dbca   ############"
+        dbca_install || exit 1
+        ora_log "############ ALL END ############"
     ;;
     -uninstall)
         dbca_uninstall

@@ -29,8 +29,12 @@ then
     echo "unzip failed"
     exit 1
 fi
-
 ora_log "unzip grid software finish"
+
+ora_log "run orcacle cluster verify enviroment "
+ora_log "detail in: $grid_pre_log"
+su - grid -c "cd grid ; ./runcluvfy.sh  stage -pre crsinst -n `rac_pub_hostname_list` -fixup -verbose > $grid_pre_log 2>&1"
+ora_log "run orcacle cluster verify enviroment finish "
 
 # prepare rsp file
 prepare_grid_file(){
@@ -103,6 +107,7 @@ su - grid -c "cd grid;  ./runInstaller -ignorePrereq -silent -responseFile ${gri
 
 #check grid success
 check_grid_finish(){
+    echo
     ora_log "waiting grid silent installment in background"
     sleep 20
     while true
@@ -116,7 +121,7 @@ check_grid_finish(){
         then
             break
         fi
-        for errfile in `ls  ${grid_base_base}/oraInventory/logs/*.err`
+        for errfile in `ls  ${grid_base_base}/oraInventory/logs/*.err 2>/dev/null`
         do
             if [ -s $errfile  ]   
             then 
@@ -131,10 +136,14 @@ check_grid_finish(){
 }
 grid_after_install(){
     ora_log "execute orainstRoot.sh and root.sh for everynode"
-    ssh rac1 "${grid_base_base}/oraInventory/orainstRoot.sh"
-    ssh rac2 "${grid_base_base}/oraInventory/orainstRoot.sh"
-    ssh rac1 "${grid_oracle_home}/root.sh"
-    ssh rac2 "${grid_oracle_home}/root.sh"    
+    for tmpnode in `rac_pub_hostname_list` 
+    do
+        ssh $tmpnode "${grid_base_base}/oraInventory/orainstRoot.sh"
+    done
+    for tmpnode in `rac_pub_hostname_list`
+    do
+        ssh $tmpnode "${grid_oracle_home}/root.sh"
+    done
     ora_log "execute configToolAllCommands"
     su - grid -c "${grid_oracle_home}/cfgtoollogs/configToolAllCommands"
 }
@@ -142,4 +151,10 @@ grid_after_install(){
 prepare_grid_file
 open_X11_for_grid
 exec_grid
-check_grid_finish && grid_after_install
+if check_grid_finish 
+then 
+    grid_after_install
+    exit 0
+else 
+    exit 1
+fi
