@@ -96,6 +96,7 @@ su - oracle -c "cd database; ./runInstaller -ignorePrereq -silent -responseFile 
 
 # pause
 check_db_finish(){
+    echo 
     ora_log "waiting db silent installment in background"
     sleep 20
     while true
