@@ -26,10 +26,6 @@ It contains two Parts : Rac(Real Application Cluster) and StandAlone .
     oraInst rac   -h              help for <oraInst rac> Command          
 
 
-
-
-
-
 ##StandAlone Installment##
 
 ###Need###
@@ -52,7 +48,7 @@ It contains two Parts : Rac(Real Application Cluster) and StandAlone .
     
 3. modify `single.cfg` for oracle configuration
 
-        cd oracle_depoy
+        cd oracle_deploy
         vim single.cfg
     
         ip='192.168.132.128'               <=========== modify it 
@@ -126,91 +122,113 @@ speed and size
 
 3. modify `rac.cfg` for rac configuration
 
-        #!/bin/bash
-        
-        current_passwd='111111'     <=========== modify it 
-        #public ip
-        public_subnet='10.5.0.0'    <=========== modify it 
-        public_eth='eth0'           <=========== modify it 
-        rac1_ip='10.5.101.20'       <=========== modify it 
-        rac2_ip='10.5.101.21'       <=========== modify it 
-        
-        #priv_ip
-        priv_subnet='10.10.10.0'    <=========== modify it 
-        priv_eth='eth1'             <=========== modify it 
-        rac1_priv_ip='10.10.10.20'  <=========== modify it 
-        rac2_priv_ip='10.10.10.21'  <=========== modify it 
-        
-        #virtual ip
-        rac1_vip='10.5.101.101'     <=========== modify it 
-        rac2_vip='10.5.101.102'     <=========== modify it 
-        
-        #scan ip
-        racscan_ip='10.5.101.100'   <=========== modify it 
-        
-        #storage 
-        #   CRS
-        raw1='/dev/sdb'             <=========== modify it 
-        raw2='/dev/sdc'             <=========== modify it 
-        raw3='/dev/sdd'             <=========== modify it 
-        #   DATA
-        raw4='/dev/sde'             <=========== modify it 
-        raw5='/dev/sdf'             <=========== modify it 
-    
-        
-        #universe
-        grid_oracle_base='/oracle/app/grid' 
-        grid_oracle_home='/oracle/app/product/11.2.0'
-        
-        oracle_oracle_base='/oracle/app/oracle'
-        oracle_oracle_home='/oracle/app/oracle/product/11.2.0'
-        oracle_sid_prefix='sugon'
-        
-        
-        #software
-        software_path='/database'
-        grid_softname='p10404530_112030_Linux-x86-64_3of7.zip'
-        oracle_softname1='p10404530_112030_Linux-x86-64_1of7.zip'
-        oracle_softname2='p10404530_112030_Linux-x86-64_2of7.zip'
-        
-        
-        #for grid
-        grid_rsp_file='/tmp/grid_clean.rsp'
-         #grid parameter for rsp
-        grid_hostname='rac1'
-        grid_scanname='racscan'
-        grid_cluster_node='rac1:rac1-vip,rac2:rac2-vip'
-        grid_network_interface="${public_eth}:${public_subnet}:1,${priv_eth}:${priv_subnet}:2"
-        grid_sysasm_passwd='Oracle_123'
-        grid_monitor_passwd='Oracle_123'
-        grid_disk_list='/dev/raw/raw1,/dev/raw/raw2,/dev/raw/raw3'
-        grid_disk_redunt='NORMAL'
-        grid_diskgroup_name='CRS'
-        grid_disk_ausize='1'
-        
-        
-        
-        #for db
-        oracle_rsp_file='/tmp/db_clean.rsp'
-         #oracle parameter for rsp
-        oracle_db_hostname='rac1'
-        oracle_db_clusternode='rac1,rac2'
-        
-        
-        #for asmca
-        asmca_diskstring='/dev/raw/*'
-        asmca_groupname='DATA'
-        asmca_disklist='/dev/raw/raw4,/dev/raw/raw5'
-        asmca_redunt='NORMAL'
-        
-        
-        #for dbca
-        dbca_sys_passwd='oracle_123'
-        dbca_system_passwd='oracle_123'
-        dbca_disk_groupname='DATA'
-        dbca_nodelist='rac1,rac2'
-        dbca_characterset='ZHS16GKB'
-        dbca_national_characterset='UTF8'
+		
+		
+		current_passwd='111111'
+		rac_node_num=2
+		
+		####################Network####################
+		#public ip
+		public_subnet='10.5.0.0'            <========= modify it
+		public_eth='eth0'                   <========= modify it
+		rac1_ip='10.5.101.20'               <========= modify it
+		rac2_ip='10.5.101.21'               <========= modify it
+		#rac3_ip='10.5.101.22'
+		#rac4_ip='10.5.101.23'
+		
+		#priv_ip
+		priv_subnet='10.10.11.0'            <========= modify it
+		priv_eth='eth1'                     <========= modify it
+		rac1_priv_ip='10.10.11.20'          <========= modify it
+		rac2_priv_ip='10.10.11.21'          <========= modify it
+		#rac3_priv_ip='10.10.10.22'
+		#rac4_priv_ip='10.10.10.23'
+		
+		
+		#virtual ip
+		rac1_vip='10.5.101.103'             <========= modify it
+		rac2_vip='10.5.101.104'             <========= modify it
+		#rac3_vip='10.5.101.103'
+		#rac4_vip='10.5.101.104'
+		
+		#scan ip
+		racscan_ip='10.5.101.100'           <========= modify it
+		#hostname
+		rac1_pub_hostname='rac1'             
+		rac1_priv_hostname='rac1-priv'          
+		rac1_virtual_hostname='rac1-vip'       
+		rac2_pub_hostname='rac2'              
+		rac2_priv_hostname='rac2-priv'         
+		rac2_virtual_hostname='rac2-vip'       
+		
+		#rac3_pub_hostname='rac3'
+		#rac3_priv_hostname='rac3-priv'
+		#rac3_virtual_hostname='rac3-vip'
+		#rac4_pub_hostname='rac4'
+		#rac4_priv_hostname='rac4-priv'
+		#rac4_virtual_hostname='rac4-vip'
+		scanip_hostname='racscan'
+		#################################################
+		
+		#################### Storage ####################
+		raw1='/dev/disk/by-id/scsi-eda75d95bf5'          <========= modify it
+		raw2='/dev/disk/by-id/scsi-172221d171a'          <========= modify it
+		
+		raw3='/dev/disk/by-id/scsi-502c2555dcc'          <========= modify it
+		raw4='/dev/disk/by-id/scsi-cbdd54acde8'          <========= modify it
+		raw5='/dev/disk/by-id/scsi-a0c82d7bff6'          <========= modify it
+		# or 
+		#
+		#raw1='/dev/mapper/vol-123'
+		#raw2='/dev/mapper/vol-112'
+		#raw3='/dev/mapper/vol-113'
+		#
+		#raw4='/dev/mapper/vol-114'
+		#raw5='/dev/mapper/vol-115'
+		#
+		
+		##################################################
+		
+		
+		#universe
+		grid_oracle_base='/oracle/app/grid' 
+		grid_oracle_home='/oracle/app/product/11.2.0'
+		
+		oracle_oracle_base='/oracle/app/oracle'
+		oracle_oracle_home='/oracle/app/oracle/product/11.2.0'
+		oracle_sid_prefix='sugon'
+		
+		
+		#software
+		software_path='/database'
+		grid_softname='p10404530_112030_Linux-x86-64_3of7.zip'
+		oracle_softname1='p10404530_112030_Linux-x86-64_1of7.zip'
+		oracle_softname2='p10404530_112030_Linux-x86-64_2of7.zip'
+		
+		############ oracle parameter #################
+		#for grid
+		grid_sysasm_passwd='Oracle_123'
+		grid_monitor_passwd='Oracle_123'
+		grid_disk_list='/dev/raw/raw1,/dev/raw/raw2,/dev/raw/raw3'
+		grid_disk_redunt='NORMAL'
+		grid_diskgroup_name='CRS'
+		grid_disk_ausize='1'
+		
+		#for asmca
+		asmca_diskstring='/dev/raw/*'
+		asmca_groupname='DATA'
+		asmca_disklist='/dev/raw/raw4,/dev/raw/raw5'
+		asmca_redunt='NORMAL'
+		#for db
+		
+		#for dbca
+		dbca_sys_passwd='oracle_123'
+		dbca_system_passwd='oracle_123'
+		dbca_disk_groupname='DATA'
+		dbca_characterset='ZHS16GKB'
+			#for English  dbca_characterset='AL32UTF8'
+		dbca_national_characterset='UTF8'
+     
 
 
 4. Execute each phase one by one,
@@ -264,4 +282,3 @@ Thanks for mashj's advises.
 Thanks for [Google](http://www.google.com.hk) and [StackOverFlow](http://stackoverflow.com)
 
 ##END##
-
