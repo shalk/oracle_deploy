@@ -9,8 +9,10 @@ source logging.sh
 
 
 #create ORACLE_HOME dir
-ssh rac2 " su - oracle -c ' mkdir \$ORACLE_HOME -p ' "
-ssh rac1 " su - oracle -c ' mkdir \$ORACLE_HOME -p ' "
+for tmpnode in `rac_pub_hostname_list`
+do
+    ssh $tmpnode " su - oracle -c ' mkdir \$ORACLE_HOME -p ' "
+done
 #prepare software
 
  [ -f ${software_path}/${oracle_softname1} ] || exit 1 
