@@ -2,14 +2,14 @@
 
 
 cd `dirname $0`
-if  [ ! -f rac_cfg_extend ] ;then
+if  [ ! -f ./rac_cfg_extend ] ;then
     echo "rac.cfg is not exist"
     exit 1
 fi	
 
 
-source rac_cfg_extend
-source logging.sh
+source ./rac_cfg_extend
+source ./logging.sh
 oracle_passwd='111111'
 #sysconfig
 

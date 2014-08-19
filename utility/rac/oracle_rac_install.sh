@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd `dirname $0`
-source logging.sh
+source ./logging.sh
 prepare(){
     sh prepare.sh
 }

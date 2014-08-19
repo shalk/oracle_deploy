@@ -1,8 +1,8 @@
 #!/bin/bash
 
 cd `dirname $0`
-source rac_cfg_extend
-source logging.sh
+source ./rac_cfg_extend
+source ./logging.sh
 tmppwd=`pwd`
 rac_pub_iplist_by_comma=$( split_list_by_comma $(rac_pub_ip_list ))
 rac_pub_hostname_list_by_comma=$( split_list_by_comma $(rac_pub_hostname_list ))

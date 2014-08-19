@@ -3,9 +3,9 @@ cd `dirname $0`
 
 
 # setup parameter
-source rac_cfg_extend
+source ./rac_cfg_extend
 oracle_base_base=`dirname  $oracle_oracle_base `
-source logging.sh
+source ./logging.sh
 
 
 #create ORACLE_HOME dir

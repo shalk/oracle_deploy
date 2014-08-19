@@ -1,7 +1,7 @@
 #!/bin/bash
 cd `dirname $0`
-source rac_cfg_extend
-source logging.sh
+source ./rac_cfg_extend
+source ./logging.sh
 
 
 ora_log "asmca uninstall umount $asmca_groupname "

@@ -1,6 +1,6 @@
 #!/bin/bash
 cd `dirname $0`
-source rac_cfg_extend
+source ./rac_cfg_extend
 
 su - grid -c 'cd  $ORACLE_HOME/deinstall; ./deinstall'
 for tmpnode in `rac_pub_hostname_list`

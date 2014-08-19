@@ -3,8 +3,8 @@
 cd `dirname $0`
 
 # setup parameter
-source rac_cfg_extend
-source logging.sh
+source ./rac_cfg_extend
+source ./logging.sh
 grid_base_base=`dirname $grid_oracle_base `
 
 
