@@ -33,7 +33,9 @@ ora_log "unzip grid software finish"
 
 ora_log "run orcacle cluster verify enviroment "
 ora_log "detail in: $grid_pre_log"
-su - grid -c "cd grid ; ./runcluvfy.sh  stage -pre crsinst -n `rac_pub_hostname_list` -fixup -verbose > $grid_pre_log 2>&1"
+tmpnodelist=$( split_list_by_comma  $(rac_pub_hostname_list))
+su - grid -c "cd grid ; ./runcluvfy.sh  stage -pre crsinst -n $tmpnodelist -fixup -verbose > $grid_pre_log 2>&1"
+unset tmpnodelist
 ora_log "run orcacle cluster verify enviroment finish "
 
 # prepare rsp file

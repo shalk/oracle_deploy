@@ -259,8 +259,8 @@ case $1 in
             echo "usage:$0  install nodenum "
             exit 1
         fi
-        restore_file 
-        backup_file 
+        restore_file >& /dev/null
+        backup_file  >& /dev/null
         set_env
         user_env
         fix_permisson

@@ -74,9 +74,9 @@ raw /dev/raw/raw3 $raw3
 raw /dev/raw/raw4 $raw4
 raw /dev/raw/raw5 $raw5
 EOF
-chmod 666 /etc/rc.d/raw.local 
+chmod 755 /etc/rc.d/raw.local 
 echo "/etc/rc.d/raw.local" >> /etc/rc.d/rc.local 
-
+/etc/rc.d/raw.local
 echo "SUBSYSTEM==\"raw\", KERNEL==\"raw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
 start_udev
 }
@@ -113,9 +113,9 @@ case $1 in
   install) 
         restore_file >/dev/null 2>&1
         backup_file
-        if [ $DistroBasedOn -eq 'SuSe' ] ; then 
+        if [ X$DistroBasedOn == 'XSuSe' ] ; then 
             setup_storage
-        elif [ $DistroBasedOn -eq 'RedHat' ]; then
+        elif [ X$DistroBasedOn == 'XRedHat' ]; then
             setup_storage_for_redhat
         else
             :
