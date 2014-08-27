@@ -41,14 +41,14 @@ i=1
 for disk in  $crsdisks
 do
     chmod 666 $disk
-    echo crsraw${i}:${disk} >> /dev/raw
+    echo raw${i}:${disk} >> /etc/raw
     ((i++))
 done
-i=1
+
 for disk in  $datadisks
 do
     chmod 666 $disk
-    echo dataraw${i}:${disk} >> /dev/raw
+    echo raw${i}:${disk} >> /etc/raw
     ((i++))
 done
 unset i
@@ -57,8 +57,7 @@ sed -i 's/\/dev\///' /etc/raw
 
 #set udeve file 
 
-echo "SUBSYSTEM==\"raw\", KERNEL==\"crsraw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
-echo "SUBSYSTEM==\"raw\", KERNEL==\"dataraw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
+echo "SUBSYSTEM==\"raw\", KERNEL==\"raw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
 chkconfig raw on
 rcraw start
 }
@@ -73,14 +72,13 @@ i=1
 for disk in  $crsdisks
 do
     chmod 666 $disk
-    echo raw /dev/raw/crsraw${i} ${disk} >> /etc/rc.d/raw.local
+    echo raw /dev/raw/raw${i} ${disk} >> /etc/rc.d/raw.local
     ((i++))
 done
-i=1
 for disk in  $datadisks
 do
     chmod 666 $disk
-    echo raw /dev/raw/dataraw${i} ${disk} >> /etc/rc.d/raw.local
+    echo raw /dev/raw/raw${i} ${disk} >> /etc/rc.d/raw.local
     ((i++))
 done
 unset i
@@ -88,8 +86,7 @@ unset i
 chmod 755 /etc/rc.d/raw.local 
 echo "/etc/rc.d/raw.local" >> /etc/rc.d/rc.local 
 /etc/rc.d/raw.local
-echo "SUBSYSTEM==\"raw\", KERNEL==\"crsraw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
-echo "SUBSYSTEM==\"raw\", KERNEL==\"dataraw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
+echo "SUBSYSTEM==\"raw\", KERNEL==\"raw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
 start_udev
 }
 

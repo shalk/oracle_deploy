@@ -35,19 +35,32 @@ rac_crs_raw_list(){
     tmp=`rac_crs_disk_list`
     for j in $tmp
     do
-        echo -e /dev/raw/crsraw$i
+        echo -e /dev/raw/raw$i
         ((i++))
     done
+}
+rac_crs_disk_num(){
+    a=(`rac_crs_disk_list`)
+    echo ${#a[@]}
 }
 rac_data_disk_list(){
     echo "$data_raw1 $data_raw2 $data_raw3 $data_raw4 $data_raw5 $data_raw6 $data_raw7 $data_raw8"
 }
+rac_data_disk_num(){
+    a=(`rac_data_disk_list`)
+    echo ${#a[@]}
+}
 rac_data_raw_list(){
     i=1
+    tmp=`rac_crs_disk_list`
+    for j in $tmp
+    do
+        ((i++))
+    done
     tmp=`rac_data_disk_list`
     for j in $tmp
     do
-        echo -e /dev/raw/dataraw$i
+        echo -e /dev/raw/raw$i
         ((i++))
     done
 }
@@ -64,7 +77,6 @@ grid_scanname="$scanip_hostname"
 grid_cluster_node=$(get_grid_cluster_node)
 grid_network_interface="${public_eth}:${public_subnet}:1,${priv_eth}:${priv_subnet}:2"
 grid_disk_list=$(split_list_by_comma $(rac_crs_raw_list))
-echo $grid_disk_list
 
 
 #for db
@@ -76,7 +88,7 @@ oracle_db_clusternode=$( split_list_by_comma  $(rac_pub_hostname_list))
 
 #for asmca
 asmca_disklist=$(split_list_by_comma $(rac_data_raw_list))
-echo $asmca_disklist
+
 #for dbca
 dbca_nodelist=$( split_list_by_comma  $(rac_pub_hostname_list))
 
