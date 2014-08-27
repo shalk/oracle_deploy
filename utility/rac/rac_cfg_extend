@@ -27,6 +27,31 @@ get_grid_cluster_node() {
     grid_cluster_node_tmp="$rac1_pub_hostname:$rac1_virtual_hostname,$rac2_pub_hostname:$rac2_virtual_hostname,$rac3_pub_hostname:$rac3_virtual_hostname,$rac4_pub_hostname:$rac4_virtual_hostname,$rac5_pub_hostname:$rac5_virtual_hostname,$rac6_pub_hostname:$rac6_virtual_hostname,$rac7_pub_hostname:$rac7_virtual_hostname,$rac8_pub_hostname:$rac8_virtual_hostname"
     echo $grid_cluster_node_tmp | sed -e 's/,://g' -e 's/,$//' -e 's/:$//'
 }
+rac_crs_disk_list(){
+    echo "$crs_raw1 $crs_raw2 $crs_raw3 $crs_raw4 $crs_raw5"
+}
+rac_crs_raw_list(){
+    i=1
+    tmp=`rac_crs_disk_list`
+    for j in $tmp
+    do
+        echo -e /dev/raw/crsraw$i
+        ((i++))
+    done
+}
+rac_data_disk_list(){
+    echo "$data_raw1 $data_raw2 $data_raw3 $data_raw4 $data_raw5 $data_raw6 $data_raw7 $data_raw8"
+}
+rac_data_raw_list(){
+    i=1
+    tmp=`rac_data_disk_list`
+    for j in $tmp
+    do
+        echo -e /dev/raw/dataraw$i
+        ((i++))
+    done
+}
+
 split_list_by_comma(){
     echo "$@" | perl -nle 'chomp; print   join  ",", split " " '
 }
@@ -38,7 +63,8 @@ grid_hostname="$rac1_pub_hostname"
 grid_scanname="$scanip_hostname"
 grid_cluster_node=$(get_grid_cluster_node)
 grid_network_interface="${public_eth}:${public_subnet}:1,${priv_eth}:${priv_subnet}:2"
-
+grid_disk_list=$(split_list_by_comma $(rac_crs_raw_list))
+echo $grid_disk_list
 
 
 #for db
@@ -49,8 +75,8 @@ oracle_db_clusternode=$( split_list_by_comma  $(rac_pub_hostname_list))
 
 
 #for asmca
-
-
+asmca_disklist=$(split_list_by_comma $(rac_data_raw_list))
+echo $asmca_disklist
 #for dbca
 dbca_nodelist=$( split_list_by_comma  $(rac_pub_hostname_list))
 

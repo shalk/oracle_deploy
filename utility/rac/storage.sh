@@ -6,6 +6,8 @@ if  [ ! -f ./rac_cfg_extend ] ;then
 fi	
 source ./rac_cfg_extend
 source ./logging.sh
+datadisks=$(rac_data_disk_list)
+crsdisks=$(rac_crs_disk_list)
 
 if [ -f /etc/redhat-release ] ; then
     DistroBasedOn='RedHat'
@@ -34,25 +36,29 @@ iscsiadm -m  node  -T $storage_flag  -p $storage_ip  -l
 setup_storage(){
 ora_log "[setup_storage] raw device relationship take effect"
 sleep 10
-cat > /etc/raw  <<EOF
-raw1:$raw1
-raw2:$raw2
-raw3:$raw3
-raw4:$raw4
-raw5:$raw5
-EOF
+> /etc/raw
+i=1
+for disk in  $crsdisks
+do
+    chmod 666 $disk
+    echo crsraw${i}:${disk} >> /dev/raw
+    ((i++))
+done
+i=1
+for disk in  $datadisks
+do
+    chmod 666 $disk
+    echo dataraw${i}:${disk} >> /dev/raw
+    ((i++))
+done
+unset i
 sed -i 's/\/dev\///' /etc/raw
 
 
 #set udeve file 
-diskArray="$raw1 $raw2 $raw3 $raw4 $raw5"
 
-for disk in $diskArray
-do
-    chmod 666 $disk
-done
-
-echo "SUBSYSTEM==\"raw\", KERNEL==\"raw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
+echo "SUBSYSTEM==\"raw\", KERNEL==\"crsraw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
+echo "SUBSYSTEM==\"raw\", KERNEL==\"dataraw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
 chkconfig raw on
 rcraw start
 }
@@ -60,24 +66,30 @@ setup_storage_for_redhat(){
 ora_log "[setup_storage] raw device relationship take effect"
 sleep 10
 #set udeve file 
-diskArray="$raw1 $raw2 $raw3 $raw4 $raw5"
 > /etc/rc.d/raw.local
 touch /etc/rc.d/raw.local
-for disk in $diskArray
+chmod 755 /etc/rc.d/raw.local
+i=1
+for disk in  $crsdisks
 do
     chmod 666 $disk
+    echo raw /dev/raw/crsraw${i} ${disk} >> /etc/rc.d/raw.local
+    ((i++))
 done
-cat > /etc/rc.d/raw.local <<EOF
-raw /dev/raw/raw1 $raw1
-raw /dev/raw/raw2 $raw2
-raw /dev/raw/raw3 $raw3
-raw /dev/raw/raw4 $raw4
-raw /dev/raw/raw5 $raw5
-EOF
+i=1
+for disk in  $datadisks
+do
+    chmod 666 $disk
+    echo raw /dev/raw/dataraw${i} ${disk} >> /etc/rc.d/raw.local
+    ((i++))
+done
+unset i
+
 chmod 755 /etc/rc.d/raw.local 
 echo "/etc/rc.d/raw.local" >> /etc/rc.d/rc.local 
 /etc/rc.d/raw.local
-echo "SUBSYSTEM==\"raw\", KERNEL==\"raw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
+echo "SUBSYSTEM==\"raw\", KERNEL==\"crsraw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
+echo "SUBSYSTEM==\"raw\", KERNEL==\"dataraw[0-9]*\", NAME=\"raw/%k\", GROUP=\"asmadmin\", MODE=\"660\", OWNER=\"grid\"" >> /etc/udev/rules.d/99-oracle-raw.rules
 start_udev
 }
 
