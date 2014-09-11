@@ -6,8 +6,11 @@ cd `dirname $0`
 source ./rac_cfg_extend
 oracle_base_base=`dirname  $oracle_oracle_base `
 source ./logging.sh
+source ./check_software.sh
 
-
+ora_log "check oracle software md5"
+check_oracle || { echo "check oracle software failed" ; exit 1 }
+ora_log "check oracle software md5 finish"
 #create ORACLE_HOME dir
 for tmpnode in `rac_pub_hostname_list`
 do
@@ -15,8 +18,6 @@ do
 done
 #prepare software
 
- [ -f ${software_path}/${oracle_softname1} ] || exit 1 
- [ -f ${software_path}/${oracle_softname2} ] || exit 1 
 chmod 777 ${software_path}/${oracle_softname1} 
 chmod 777 ${software_path}/${oracle_softname2} 
 

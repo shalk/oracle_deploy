@@ -45,12 +45,22 @@ done
 echo
 unset i
 
+for tmpip in $(rac_pub_ip_list)
+do
+    scp -p -q -r /etc/shadow $tmpip:/etc/
+    scp -p -q -r /etc/gshadow $tmpip:/etc/
+    scp -p -q -r /etc/passwd $tmpip:/etc/
+    scp -p -q -r /etc/group $tmpip:/etc/
+    scp -p -q -r /home/  $tmpip:/
+    #ssh $tmpip "chmod "
+done
+
 ora_log "setup no password for user grid,oracle"
 cd ../no_passwd/; 
 chmod a+x xmakessh
-./xmakessh  --user root   --pass  $current_passwd --nodes  $rac_pub_hostname_list_by_comma  >/dev/null
-./xmakessh  --user oracle --pass  $current_passwd --nodes  $rac_pub_hostname_list_by_comma  >/dev/null
-./xmakessh  --user grid   --pass  $current_passwd --nodes  $rac_pub_hostname_list_by_comma  >/dev/null
+./xmakessh  --user root   --pass  $current_passwd     --nodes  $rac_pub_hostname_list_by_comma  >/dev/null
+./xmakessh  --user oracle --pass  $user_oracle_passwd --nodes  $rac_pub_hostname_list_by_comma  >/dev/null
+./xmakessh  --user grid   --pass  $user_grid_passwd   --nodes  $rac_pub_hostname_list_by_comma  >/dev/null
 cd $tmppwd
 ora_log "setup no password for user grid,oracle finish"
 

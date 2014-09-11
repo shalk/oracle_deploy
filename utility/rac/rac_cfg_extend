@@ -68,6 +68,10 @@ rac_data_raw_list(){
 split_list_by_comma(){
     echo "$@" | perl -nle 'chomp; print   join  ",", split " " '
 }
+#for os system
+user_oracle_passwd="oracle"
+user_grid_passwd="grid"
+
 #for grid
 grid_rsp_file='/tmp/grid_clean.rsp'
 grid_pre_log='/tmp/grid_pre.log'

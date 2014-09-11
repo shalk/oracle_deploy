@@ -10,7 +10,6 @@ fi
 
 source ./rac_cfg_extend
 source ./logging.sh
-oracle_passwd='111111'
 #sysconfig
 
 backup_file(){
@@ -158,7 +157,11 @@ hostname $your_host
  [ -f /etc/sysconfig/network ] &&  perl -p -i -e "s/HOSTNAME.*/HOSTNAME=$your_host/" /etc/sysconfig/network
  [ -f /etc/HOSTNAME ] && echo $your_host > /etc/HOSTNAME
 #del group adn user
+
 ora_log "setup oracle user and group" 
+awk -F:  '{if( $3 == 1001) {print $1}}' /etc/passwd | userdel -r  >& /dev/null 
+awk -F:  '{if( $3 == 1002) {print $1}}' /etc/passwd | userdel -r  >& /dev/null
+
 userdel -r oracle  >/dev/null 2>&1 
 userdel -r grid    >/dev/null 2>&1
 groupdel oinstall  >/dev/null 2>&1
@@ -174,10 +177,10 @@ groupdel asmdba    >/dev/null 2>&1
 /usr/sbin/groupadd -g 505 asmadmin
 /usr/sbin/groupadd -g 506 asmoper 
 /usr/sbin/groupadd -g 507 asmdba 
-/usr/sbin/useradd -m -g oinstall -G dba,asmdba,oper oracle 
-/usr/sbin/useradd -m -g oinstall -G asmadmin,asmdba,asmoper,oper,dba grid
-echo $oracle_passwd | passwd oracle --stdin
-echo $oracle_passwd | passwd grid --stdin
+/usr/sbin/useradd -m -g oinstall -G dba,asmdba,oper oracle  -u 1001 -o 
+/usr/sbin/useradd -m -g oinstall -G asmadmin,asmdba,asmoper,oper,dba grid -u 1002 -o
+echo $user_oracle_passwd | passwd oracle --stdin
+echo $user_grid_passwd | passwd grid --stdin
 
 ora_log "setup oracle user and group finish" 
 #create dir
@@ -211,6 +214,7 @@ chmod 666 /dev/urandom
 chmod 666 /dev/random
 }
 uninstall(){
+
 rm -rf /oracle/app/
 rm -rf /oracle/app/oraInventory/
 rm -rf /usr/local/bin/dbhome
@@ -219,6 +223,7 @@ rm -rf /usr/local/bin/coraenv
 rm -rf /etc/oratabb
 rm -rf /etc/oraInst.loc
 rm -rf /tmp/.oracle
+ora_log "delete oracle user and group"
 userdel -r oracle
 userdel -r grid
 groupdel oinstall
@@ -227,7 +232,62 @@ groupdel oper
 groupdel asmadmin
 groupdel asmoper
 groupdel asmdba
+ora_log "delete oracle user and group finish"
+ora_log "delete oracle file and dir"
+rm -rf $grid_oracle_base
+rm -rf $grid_oracle_home
+rm -rf $oracle_oracle_base
+rm -rf $oracle_oracle_home
+local $oracle_base_base=$(dirname $grid_oracle_base)
+local $grid_base_base=$(dirname $oracle_oracle_base)
+rm -rf ${oracle_base_base}/oraInverntory
+rm -rf ${grid_base_base}/oraInverntory
+rm -rf /etc/ora*
+rm -rf /tmp/.oracle
+rm -rf /var/tmp/.oracle
+rm -rf /etc/inittab.crs
+ [ -f  /etc/initab.no_crs ]  && cp -rf /etc/inittab.no_crs /etc/inittab
+ora_log "delete oracle file and dir finish"
+ora_log "dd disk in raw"
+for disk in  $(rac_data_disk_list) $(rac_crs_disk_list)
+do
+    while :
+    do
+        if read  -p "Make Sure you need to format $disk (y/n):" REPLY
+        then
+            case $REPLY in
+                y|Y)
+                 dd if=/dev/zero of=$disk bs=1024 count=5000
+                 break 1
+                 ;;
+                 n|N)
+                 echo "Format by yourself"
+                 echo dd if=/dev/zero of=$disk bs=1024 count=5000
+                 break 1
+                 ;;
+                 *)
+                 echo "input error"
+                 continue 1
+                 ;;
+             esac
+        fi
+    done
+done
+ora_log "dd disk in raw finish"
+
+rm -rf /etc/init.d/init.ohasd
+rm -rf /etc/init.d/ohasd
+rm -rf /tmp/CVU_*
+rm -rf /tmp/OraInsta*
+rm -rf /opt/ORCLfmap
+rm -rf /usr/local/bin/dbhome
+rm -rf  /usr/local/bin/oraenv 
+rm -rf /usr/local/bin/coraenv
+   
+ora_log "Please reboot the node "
+
 }
+
 user_env(){
 ora_log "make bash_profile for user grid, oracle "
 cat > /home/grid/.bash_profile <<EOF

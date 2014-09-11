@@ -171,20 +171,20 @@ speed and size
 		#################################################
 		
 		#################### Storage ####################
-		raw1='/dev/disk/by-id/scsi-eda75d95bf5'          <========= modify it
-		raw2='/dev/disk/by-id/scsi-172221d171a'          <========= modify it
-		
-		raw3='/dev/disk/by-id/scsi-502c2555dcc'          <========= modify it
-		raw4='/dev/disk/by-id/scsi-cbdd54acde8'          <========= modify it
-		raw5='/dev/disk/by-id/scsi-a0c82d7bff6'          <========= modify it
+		crs_raw1='/dev/disk/by-id/scsi-eda75d95bf5'          <========= modify it
+		crs_raw2='/dev/disk/by-id/scsi-172221d171a'          <========= modify it
+		crs_raw3='/dev/disk/by-id/scsi-502c2555dcc'          <========= modify it
+
+		data_raw1='/dev/disk/by-id/scsi-cbdd54acde8'          <========= modify it
+		data_raw2='/dev/disk/by-id/scsi-a0c82d7bff6'          <========= modify it
 		# or 
 		#
-		#raw1='/dev/mapper/vol-123'
-		#raw2='/dev/mapper/vol-112'
-		#raw3='/dev/mapper/vol-113'
+		#crs_raw1='/dev/mapper/vol-123'
+		#crs_raw2='/dev/mapper/vol-112'
+		#crs_raw3='/dev/mapper/vol-113'
 		#
-		#raw4='/dev/mapper/vol-114'
-		#raw5='/dev/mapper/vol-115'
+		#data_raw1='/dev/mapper/vol-114'
+		#data_raw2='/dev/mapper/vol-115'
 		#
 		
 		##################################################
@@ -209,7 +209,6 @@ speed and size
 		#for grid
 		grid_sysasm_passwd='Oracle_123'
 		grid_monitor_passwd='Oracle_123'
-		grid_disk_list='/dev/raw/raw1,/dev/raw/raw2,/dev/raw/raw3'
 		grid_disk_redunt='NORMAL'
 		grid_diskgroup_name='CRS'
 		grid_disk_ausize='1'
@@ -217,7 +216,6 @@ speed and size
 		#for asmca
 		asmca_diskstring='/dev/raw/*'
 		asmca_groupname='DATA'
-		asmca_disklist='/dev/raw/raw4,/dev/raw/raw5'
 		asmca_redunt='NORMAL'
 		#for db
 		

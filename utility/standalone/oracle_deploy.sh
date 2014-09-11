@@ -8,13 +8,26 @@ ora_log(){
 
 printf  "%b" "[INFO] $*\n"
 }
+ora_err(){
+
+printf  "%b" "[ERROR] $*\n"
+}
 
 prepare_soft(){
 cp -rf rsp11g0203/*.rsp /home/oracle
 chown oracle:oinstall /home/oracle/*.rsp
 
- [ -f ${software_path}/${oracle_softname1} ] || exit 1 
- [ -f ${software_path}/${oracle_softname2} ] || exit 1 
+if [ ! -f ${software_path}/${oracle_softname1} ] 
+then
+    echo ${software_path}/${oracle_softname1}  is not exist 
+    exit 1
+fi
+
+if [ ! -f ${software_path}/${oracle_softname2} ] 
+then
+    echo ${software_path}/${oracle_softname2}  is not exist 
+    exit 1
+fi
 
 chmod 777 ${software_path}/${oracle_softname1} 
 chmod 777 ${software_path}/${oracle_softname2} 

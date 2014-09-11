@@ -2,7 +2,14 @@
 
 cd `dirname $0`
 source ./logging.sh
+source ./status_check.sh
 prepare(){
+    sh prepare_check.sh
+    if [ $? != 0 ]
+    then
+        ora_log "preOpt Failed"
+        exit 1
+    fi
     sh prepare.sh
 }
 grid_install(){
@@ -33,6 +40,9 @@ rac_usage(){
    sh rac_usage
 }
 
+smart_uninstall(){
+    sh force_uninstall.sh    
+}
 
 opt=$1
 shift
@@ -66,22 +76,19 @@ case $opt in
     ;;
     -all)
         ora_log "############ STAGE 1 -preOpt ############"
-        prepare || exit 1
+        prepare       || { echo "[ERROR] -preOpt fail" ; exit 1 ;}
         ora_log "############ STAGE 2 -grid   ############"
-        grid_install  || exit 1
+        grid_install  || { echo "[ERROR] -grid fail" ; exit 1; }
         ora_log "############ STAGE 3 -asmca  ############"
-        asmca_install || exit 1
+        asmca_install || { echo "[ERROR] -asmca fail" ; exit 1; }
         ora_log "############ STAGE 4 -db     ############"
-        db_install  || exit 1
+        db_install    || { echo "[ERROR] -db fail" ; exit 1 ; }
         ora_log "############ STAGE 5 -dbca   ############"
-        dbca_install || exit 1
+        dbca_install  || { echo "[ERROR] -dbca fail" ;  exit 1 ; }
         ora_log "############ ALL END ############"
     ;;
     -uninstall)
-        dbca_uninstall
-        db_uninstall
-        asmca_uninstall
-        grid_uninstall
+        smart_uninstall
     ;;
     *)
     rac_usage

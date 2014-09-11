@@ -5,19 +5,16 @@ cd `dirname $0`
 # setup parameter
 source ./rac_cfg_extend
 source ./logging.sh
+source ./check_software.sh
 grid_base_base=`dirname $grid_oracle_base `
 
 
-#chekc md5
-#sh check.sh
-if [ $? != 0 ] ; then
-    echo "check failed"
-    exit 1
-fi
+ora_log "check grid software md5"
+check_grid || { ora_err "check grid failed "; exit 1 ;}
+ora_log "check grid software md5 finish"
 
 
 # prepare software
- [ -f ${software_path}/${grid_softname} ] || exit 1 
 chmod 777 $software_path/$grid_softname
 ora_log "unzip grid software waiting..."
 grid_unzip_log_name=`mktemp --tmpdir=/tmp --suffix=.log grid_unzip.XXXXX`
