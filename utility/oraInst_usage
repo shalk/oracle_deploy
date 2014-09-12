@@ -28,7 +28,7 @@ Option:
     oraInst rac   -dbInstall      install database software only
     oraInst rac   -dbca           create oracle database instance. 
     oraInst rac   -all            install oracle all in one parameter . 
-    oraInst rac   -uninstall      uninstall a complete oracle rac, uninstall dbca,db,asmca,grid one by one .
+    oraInst rac   -uninstall      uninstall a complete oracle rac by  rm , need reboot .
     oraInst rac   -h              help for <oraInst rac> Command 
 
 COPYRIGHT

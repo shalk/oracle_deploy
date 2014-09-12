@@ -15,5 +15,5 @@ usage: oracInst rac  <opt>
       -un_db        uninstall oracle database software
       -un_asmca     drop oracle data diskgroup
       -un_grid      uninstall grid software
-      -uninstall    uninstall a complete rac.It will uninstall dbca,db,asmca grid one by one.
+      -uninstall    uninstall a complete rac by rm , need reboot.
 "
