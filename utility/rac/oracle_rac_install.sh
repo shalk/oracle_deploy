@@ -2,7 +2,7 @@
 
 cd `dirname $0`
 source ./logging.sh
-source ./status_check.sh
+
 prepare(){
     sh prepare_check.sh
     if [ $? != 0 ]

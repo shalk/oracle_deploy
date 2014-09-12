@@ -9,7 +9,7 @@ source ./logging.sh
 source ./check_software.sh
 
 ora_log "check oracle software md5"
-check_oracle || { echo "check oracle software failed" ; exit 1 }
+check_oracle || { echo "check oracle software failed" ; exit 1 ;}
 ora_log "check oracle software md5 finish"
 #create ORACLE_HOME dir
 for tmpnode in `rac_pub_hostname_list`

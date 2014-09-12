@@ -132,7 +132,7 @@ case $1 in
 #        show_disk
         ;;
   uninstall)
-        uninstall
+        uninstall >& /dev/null
         restore_file
         show_disk
         ;;

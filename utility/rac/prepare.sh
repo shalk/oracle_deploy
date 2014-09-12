@@ -33,7 +33,8 @@ for tmpip in $(rac_pub_ip_list)
 do
     ora_log "=========$tmpip prepare start=========="
     ssh $tmpip "chmod a+x  oracle_deploy -R ;cd oracle_deploy;  
-    cd utility/rac/
+    rm /tmp/* -rf;
+    cd utility/rac/;
     sh universe.sh install $i;
     sh storage.sh install;
     "

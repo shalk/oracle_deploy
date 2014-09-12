@@ -215,31 +215,23 @@ chmod 666 /dev/random
 }
 uninstall(){
 
-rm -rf /oracle/app/
-rm -rf /oracle/app/oraInventory/
-rm -rf /usr/local/bin/dbhome
-rm -rf /usr/local/bin/oraenv
-rm -rf /usr/local/bin/coraenv
-rm -rf /etc/oratabb
-rm -rf /etc/oraInst.loc
-rm -rf /tmp/.oracle
 ora_log "delete oracle user and group"
-userdel -r oracle
-userdel -r grid
-groupdel oinstall
-groupdel dba
-groupdel oper
-groupdel asmadmin
-groupdel asmoper
-groupdel asmdba
+userdel -r oracle >& /dev/null
+userdel -r grid  >& /dev/null
+groupdel oinstall >& /dev/null
+groupdel dba >& /dev/null
+groupdel oper >& /dev/null
+groupdel asmadmin >& /dev/null
+groupdel asmoper >& /dev/null
+groupdel asmdba >& /dev/null
 ora_log "delete oracle user and group finish"
 ora_log "delete oracle file and dir"
 rm -rf $grid_oracle_base
 rm -rf $grid_oracle_home
 rm -rf $oracle_oracle_base
 rm -rf $oracle_oracle_home
-local $oracle_base_base=$(dirname $grid_oracle_base)
-local $grid_base_base=$(dirname $oracle_oracle_base)
+local oracle_base_base=$(dirname $grid_oracle_base)
+local grid_base_base=$(dirname $oracle_oracle_base)
 rm -rf ${oracle_base_base}/oraInverntory
 rm -rf ${grid_base_base}/oraInverntory
 rm -rf /etc/ora*
@@ -253,24 +245,23 @@ for disk in  $(rac_data_disk_list) $(rac_crs_disk_list)
 do
     while :
     do
-        if read  -p "Make Sure you need to format $disk (y/n):" REPLY
-        then
-            case $REPLY in
-                y|Y)
-                 dd if=/dev/zero of=$disk bs=1024 count=5000
-                 break 1
-                 ;;
-                 n|N)
-                 echo "Format by yourself"
-                 echo dd if=/dev/zero of=$disk bs=1024 count=5000
-                 break 1
-                 ;;
-                 *)
-                 echo "input error"
-                 continue 1
-                 ;;
-             esac
-        fi
+        ora_log "Make Sure you need to format $disk (y/n):"
+        read  REPLY
+        case $REPLY in
+            y|Y)
+            dd if=/dev/zero of=$disk bs=1024 count=5000
+            break 1
+            ;;
+            n|N)
+            echo "Format by yourself"
+            echo dd if=/dev/zero of=$disk bs=1024 count=5000
+            break 1
+            ;;
+            *)
+            echo "input error"
+            continue 1
+            ;;
+        esac
     done
 done
 ora_log "dd disk in raw finish"
@@ -281,9 +272,8 @@ rm -rf /tmp/CVU_*
 rm -rf /tmp/OraInsta*
 rm -rf /opt/ORCLfmap
 rm -rf /usr/local/bin/dbhome
-rm -rf  /usr/local/bin/oraenv 
+rm -rf /usr/local/bin/oraenv 
 rm -rf /usr/local/bin/coraenv
-   
 ora_log "Please reboot the node "
 
 }
