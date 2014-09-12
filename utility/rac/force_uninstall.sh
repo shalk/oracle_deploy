@@ -33,3 +33,5 @@ do
 done 
 echo
 unset i
+
+ora_log  "Please Reboot each nodes  "

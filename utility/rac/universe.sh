@@ -274,7 +274,7 @@ rm -rf /opt/ORCLfmap
 rm -rf /usr/local/bin/dbhome
 rm -rf /usr/local/bin/oraenv 
 rm -rf /usr/local/bin/coraenv
-ora_log "Please reboot the node "
+ora_log "single node uninstall  finish  "
 
 }
 
