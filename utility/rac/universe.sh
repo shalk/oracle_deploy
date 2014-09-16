@@ -232,8 +232,8 @@ rm -rf $oracle_oracle_base
 rm -rf $oracle_oracle_home
 local oracle_base_base=$(dirname $grid_oracle_base)
 local grid_base_base=$(dirname $oracle_oracle_base)
-rm -rf ${oracle_base_base}/oraInverntory
-rm -rf ${grid_base_base}/oraInverntory
+rm -rf ${oracle_base_base}/oraInventory
+rm -rf ${grid_base_base}/oraInventory
 rm -rf /etc/ora*
 rm -rf /tmp/.oracle
 rm -rf /var/tmp/.oracle
