@@ -23,8 +23,8 @@ check_ip_format(){
     [ ${stat} -eq 0 ] || return 2
 }
 check_eth_ip_match(){
-    local ip=$1
-    local eth=$2
+    local eth=$1
+    local ip=$2
     local stat=1
     if [ -z $ip ] || [ -z $eth ] ; then
         echo "[func:check_eth_ip_match] Miss arg "
@@ -82,6 +82,34 @@ check_disk_miss()
     return $stat
     
 }
+get_ip_from_eth(){
+    local eth=$1
+    echo $( ifconfig $eth 2>/dev/null | grep "inet addr" | awk '{print $2}' | awk -F: '{print $2}' )
+}
+
+get_mask_form_eth(){
+    local eth=$1
+    echo $( ifconfig $eth 2>/dev/null | grep "inet addr" | awk -F: '{print $NF}' )
+}
+check_subnet()
+{
+    local eth=$1
+    local subnet=$2
+    local stat=1
+    local ip=$(get_ip_from_eth $eth)
+    local netmask=$(get_mask_form_eth $eth)
+
+    local local_subnet=`perl calc_subnet.pl $ip $netmask` 
+    if [[ $local_subnet != $subnet ]]
+    then
+        ora_err "subnet($subnet) is not correct,the actual subnet is ($local_subnet)"
+        ora_err "Please Check each node for the same subnet "
+        stat=2
+    else
+        stat=0
+    fi
+    return $stat
+}
 
 #step 1 check rac.cfg status
 bash -u ../../rac.cfg 
@@ -98,7 +126,7 @@ do
 #    check_eth_ip_match $public_eth  $ip || RET=1
     check_ip_link  $ip || RET=1
 done
-
+check_eth_ip_match $public_eth  $rac1_ip || RET=1
 
 for ip in $(rac_vip_list) 
 do
@@ -112,6 +140,8 @@ do
 #    check_eth_ip_match $priv_eth  $ip || RET=1
     check_ip_link  $ip ||  RET=1
 done
+check_eth_ip_match $priv_eth  $rac1_priv_ip || RET=1
+
 
 tmpip=$racscan_ip
 check_ip_format $tmpip || RET=1
@@ -119,7 +149,9 @@ check_ip_link  $tmpip nolink && RET=1
 unset tmpip
 
 check_ip_format $public_subnet || RET=1
-check_ip_format $priv_subnet || RET=1
+check_ip_format $priv_subnet   || RET=1
+check_subnet $public_eth $public_subnet   || RET=1
+check_subnet $priv_eth   $priv_subnet     || RET=1
 
 # step 3 check disk 
 for disk in $(rac_data_disk_list)

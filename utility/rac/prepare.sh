@@ -49,11 +49,10 @@ unset i
 for tmpip in $(rac_pub_ip_list)
 do
     scp -p -q -r /etc/shadow $tmpip:/etc/
-    scp -p -q -r /etc/gshadow $tmpip:/etc/
+    scp -p -q -r /etc/gshadow $tmpip:/etc/ >& /dev/null
     scp -p -q -r /etc/passwd $tmpip:/etc/
     scp -p -q -r /etc/group $tmpip:/etc/
     scp -p -q -r /home/  $tmpip:/
-    #ssh $tmpip "chmod "
 done
 
 ora_log "setup no password for user grid,oracle"

@@ -2,9 +2,9 @@
 
 ora_log(){
 
-printf  "%b" "[INFO] $*\n"
+    printf  "%b" "[INFO] $*\n"
 }
 ora_err(){
 
-printf  "%b" "[ERROR] $*\n"
+    printf  "%b" "\033[40;31m[ERROR]\033[0m $*\n"
 }
